@@ -1,13 +1,10 @@
 package com.sample.repository;
 
 import com.sample.domain.User;
+import org.springframework.data.repository.CrudRepository;
 
-import java.util.Map;
+import java.util.Optional;
 
-public interface UserRepository {
-    void save(User account);
-    Map<String, Object> findAll();
-    User findById(String id);
-    void update(User account);
-    void delete(String id);
+public interface UserRepository extends CrudRepository<User, String> {
+    Optional<User> findByIdAndName(String id, String name);
 }

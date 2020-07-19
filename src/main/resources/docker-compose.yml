@@ -1,0 +1,65 @@
+#docker-compose.yml
+version: '3'
+
+# container 설정하기
+services:
+  # https://docs.docker.com/compose/compose-file/ docker-compose 설정 참고
+  # https://github.com/bitnami/bitnami-docker-redis redis 설정 참고
+  redis:
+    # 어떤 이미지로 실행할 것 인지 설정
+    image: redis
+
+    # tokenRedis라는 컨테이너 이름으로 실행
+    container_name: tokenRedis
+
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+      # Disabling AOF persistence
+      - REDIS_AOF_ENABLED=no
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+
+    restart: always
+    # 포트 설정 {외부:내부}
+    ports:
+    - '6379:6379'
+
+    # 외부 데이터 저장소 설정
+#    volumes:
+#      - 'redis_data:/docker/redis/data'
+
+#volumes:
+#  redis_data:
+#    driver: local
+
+# 현재 동작중인 컨테이너의 상태를 확인
+# - docker-compose ps
+
+# 컨테이너의 로그를 확인
+# - docker-compose logs
+
+# 컨테이너에 임의 명령을 실행하기 위한 명령어
+# - docker-compose run {서비스명} {명령}
+# ex) docker-compose run redis redis-cli
+
+# 컨테이너 서비스의 시작, 정지, 재시작, 일시정지
+# - docker-compose start / stop / restart / unpause
+
+# docker-compose로 실행한 컨테이너를 모두 삭제
+# - docker-compose rm
+
+# 실행중인 컨테이너 삭제 (추가 옵션 정리 필요)
+# - docker-compose kill
+
+# 네트워크 정보, 볼륨, 컨테이너를 일괄 정지 및 삭제 처리
+# - docker-compose down
+
+# 포트 정보 확인
+# - docker-compose port
+
+# 설정파일 확인
+# - docker-compose config
+
+
+
+
