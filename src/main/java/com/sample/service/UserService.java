@@ -3,7 +3,6 @@ package com.sample.service;
 import com.sample.domain.User;
 import com.sample.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -24,16 +23,16 @@ public class UserService {
     }
 
     @Transactional
-    public User update(final String id, final String name) {
+    public User update(final String id, final String name) throws Exception {
         return userRepository.findByIdAndName(id, name)
                 .map(o -> {
                     o.updatedSalary(2000);
                     return o;
                 })
-                .orElseGet(null);
+                .orElseThrow(Exception::new);
 
     }
-    public Iterable<User> findAll() {
+    public Object findAll() {
         return userRepository.findAll();
     }
 }

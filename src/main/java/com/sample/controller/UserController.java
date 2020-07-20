@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -27,12 +25,12 @@ public class UserController {
     }
 
     @GetMapping("/update/{id}/{name}")
-    public User update(@PathVariable("id") final String id, @PathVariable("name") final String name) {
+    public User update(@PathVariable("id") final String id, @PathVariable("name") final String name) throws Exception {
         return userService.update(id, name);
     }
 
     @GetMapping("/all")
-    public Map<String, Object> all() {
-        return null;
+    public Object all() {
+        return userService.findAll();
     }
 }
