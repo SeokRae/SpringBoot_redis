@@ -70,6 +70,13 @@ public class SpringBootRedisApplicationTests {
         zSetOperations.add("test:user:detail:zset", "최우선사항", 1);
         zSetOperations.add("test:user:detail:zset", "차선책", 2);
         zSetOperations.add("test:user:detail:zset", "차차선책", 3);
+
+        redisTemplate.expireAt("test:value", dueDate());
+
+    }
+
+    private Date dueDate() {
+        return Date.from(LocalDateTime.now().plusSeconds(30).atZone(ZoneId.systemDefault()).toInstant());
     }
 
     @Test
@@ -131,14 +138,7 @@ public class SpringBootRedisApplicationTests {
         assertTrue(hasKey);
 
         // Key 만료 날짜 세팅
-        Boolean expireAt = redisTemplate.expireAt("key1",
-                Date.from(
-                        LocalDateTime.now()
-                                .plusDays(1L)
-                                .atZone(
-                                        ZoneId.systemDefault()
-                                )
-                                .toInstant()));
+        Boolean expireAt = redisTemplate.expireAt("key1", dueDate());
         assertTrue(expireAt);
         // Key 만료 시간 세팅
         Boolean expire = redisTemplate.expire("key1", 60, TimeUnit.SECONDS);
@@ -172,14 +172,7 @@ public class SpringBootRedisApplicationTests {
         Map<Object, User> hashMap = hashOperations.entries("user");
 
         /* redis 의 데이터의 유효기간을 설정 */
-        redisTemplate.expireAt(hashKey, Date.from(
-                LocalDateTime.now()
-                        .plusSeconds(20)
-                        .atZone(
-                                ZoneId.systemDefault()
-                        )
-                        .toInstant())
-        );
+        redisTemplate.expireAt(hashKey, dueDate());
         System.out.println("key : " + hashKey + " -> expiredAt : " + redisTemplate.getExpire(hashKey));
 
         /* hgetall {key}로 검색 */
@@ -201,7 +194,7 @@ public class SpringBootRedisApplicationTests {
         setOperations.add(setKey, "setValue02");
         setOperations.add(setKey, "setValue03");
         /* redisTemplate 통해 특정 key 값의 유효기간을 설정 */
-        redisTemplate.expireAt(setKey, Date.from(LocalDateTime.now().plusSeconds(20).atZone(ZoneId.systemDefault()).toInstant()));
+        redisTemplate.expireAt(setKey, dueDate());
 
         /* smembers * */
         Set<String> sets = setOperations.members(setKey);
@@ -220,7 +213,7 @@ public class SpringBootRedisApplicationTests {
         zSetOperations.add("zSet", "tuple", 1);
         zSetOperations.add("zSet", "tuple1", 2);
         zSetOperations.add("zSet", "tuple2", 3);
-        redisTemplate.expireAt("zSet", Date.from(LocalDateTime.now().plusSeconds(20).atZone(ZoneId.systemDefault()).toInstant()));
+        redisTemplate.expireAt("zSet", dueDate());
 
         /* zSet에 담겨 있는 값의 크기 확인 */
         Long size = zSetOperations.size("zSet");
@@ -231,6 +224,5 @@ public class SpringBootRedisApplicationTests {
         for( String set : sets) {
             System.out.println(set);
         }
-
     }
 }
