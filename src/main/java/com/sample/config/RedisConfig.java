@@ -22,6 +22,7 @@ public class RedisConfig {
     @Autowired
     RedisProperties redisProperties;
 
+    /* Redis Connector */
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();

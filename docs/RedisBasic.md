@@ -11,14 +11,15 @@
 1. Collections
 2. Strings - key / value
 3. List
-4. Set
-    1. Sorted Sets
+4. Sets
+    1. Sorted Sets (zSet)
+    2. set
 5. Hash
 
 ## Redis 주의사항
 
 - 메모리 관리
-- SingleThread로 인한  문제
+- SingleThread 로 인한 문제
 - Redis Replication
 
 ## 권장 설정

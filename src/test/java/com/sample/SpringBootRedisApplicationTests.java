@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
 @SpringBootTest(classes = RedisApplication.class)
 public class SpringBootRedisApplicationTests {
 
-    @Resource(name = "stringRedisTemplate")
+    @Resource(name = "redisTemplate")
     private ListOperations<String, String> listOperations;
 
     @Resource(name = "redisTemplate")
@@ -46,7 +46,6 @@ public class SpringBootRedisApplicationTests {
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
-
 
     @Before
     public void init() {
@@ -72,6 +71,9 @@ public class SpringBootRedisApplicationTests {
         zSetOperations.add("test:user:detail:zset", "차차선책", 3);
 
         redisTemplate.expireAt("test:value", dueDate());
+        redisTemplate.expireAt("test:user:detail", dueDate());
+        redisTemplate.expireAt("test:user:detail:set", dueDate());
+        redisTemplate.expireAt("test:user:detail:zset", dueDate());
 
     }
 
@@ -169,7 +171,7 @@ public class SpringBootRedisApplicationTests {
         hashOperations.put(hashKey, "hashKey2", User.builder().id("id").name("seok2").build());
 
         /* hashOperations의 entry를 조회*/
-        Map<Object, User> hashMap = hashOperations.entries("user");
+        Map<Object, User> hashMap = hashOperations.entries(hashKey);
 
         /* redis 의 데이터의 유효기간을 설정 */
         redisTemplate.expireAt(hashKey, dueDate());
@@ -183,7 +185,7 @@ public class SpringBootRedisApplicationTests {
         }
 
         /* 해당 키 값의 expire 값을 확인 */
-        System.out.println("expireAt : " + hashOperations.getOperations().getExpire("key") + " 초");
+        System.out.println("expireAt : " + hashOperations.getOperations().getExpire(hashKey) + " 초");
     }
 
     @Test
@@ -221,6 +223,7 @@ public class SpringBootRedisApplicationTests {
 
         /* range 라는 메서드로 slice 해서 Set<String>에 보관 가능 */
         Set<String> sets = zSetOperations.range("zSet", 0, size);
+
         for( String set : sets) {
             System.out.println(set);
         }
