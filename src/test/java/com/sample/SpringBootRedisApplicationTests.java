@@ -1,7 +1,7 @@
 package com.sample;
 
+import com.sample.domain.User;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +22,9 @@ import java.util.concurrent.TimeUnit;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.*;
 
+/**
+ * 기본 Reids 문법 테스트
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = RedisApplication.class)
 public class SpringBootRedisApplicationTests {
@@ -29,20 +32,23 @@ public class SpringBootRedisApplicationTests {
     @Resource(name = "stringRedisTemplate")
     private ListOperations<String, String> listOperations;
 
-    @Resource(name = "stringRedisTemplate")
-    private HashOperations<String, String, String> hashOperations;
+    @Resource(name = "redisTemplate")
+    private HashOperations<String, Object, User> hashOperations;
 
-    @Resource(name = "stringRedisTemplate")
+    @Resource(name = "redisTemplate")
     private SetOperations<String, String> setOperations;
 
-    @Resource(name="stringRedisTemplate")
+    @Resource(name="redisTemplate")
     private ZSetOperations<String, String> zSetOperations;
 
-    @Resource(name = "stringRedisTemplate")
+    @Resource(name = "redisTemplate")
     ValueOperations<String, String> valueOperations;
 
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
+
     @Before
-    @Ignore
     public void init() {
 
         //list put
@@ -53,8 +59,8 @@ public class SpringBootRedisApplicationTests {
         listOperations.rightPush("test:user", "zset");
 
         //hash put
-        hashOperations.put("test:user:detail", "name", "seok");
-        hashOperations.put("test:user:detail", "age", "34");
+        hashOperations.put("test:user:detail", "name", User.builder().name("seok").build());
+        hashOperations.put("test:user:detail", "salary", User.builder().salary(10000).build());
 
         //set put
         setOperations.add("test:user:detail:set", "상세set1");
@@ -67,8 +73,8 @@ public class SpringBootRedisApplicationTests {
     }
 
     @Test
-    @Ignore
     public void redisTest1() {
+
         String user = listOperations.leftPop("test:user");
         StringBuffer stringBuffer = new StringBuffer();
 
@@ -77,8 +83,8 @@ public class SpringBootRedisApplicationTests {
         while (user != null) {
             switch (user) {
                 case "detail":
-                    Map<String, String> intro = hashOperations.entries("test:user:detail");
-                    for(String key : intro.keySet()) {
+                    Map<Object, User> intro = hashOperations.entries("test:user:detail");
+                    for(Object key : intro.keySet()) {
                         System.out.println("key : " + intro.get(key));
                     }
                     break;
@@ -109,9 +115,6 @@ public class SpringBootRedisApplicationTests {
         }
     }
 
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
-
     @Test
     public void commonCommand() {
         ValueOperations<String, String> valueOps = redisTemplate.opsForValue();
@@ -119,27 +122,115 @@ public class SpringBootRedisApplicationTests {
         valueOps.set("key2", "key2value");
         // Key 타입 조회.
         assertEquals(DataType.STRING, redisTemplate.type("key1"));
+
         // 존재하는 Key의 개수를 반환.
         assertSame(2L, redisTemplate.countExistingKeys(Arrays.asList("key1", "key2", "key3")));
         // Key가 존재하는지 확인
-        boolean hasKey = redisTemplate.hasKey("key1");
+        Boolean hasKey = redisTemplate.hasKey("key1");
         System.out.println("hasKey('key1')" + hasKey);
         assertTrue(hasKey);
+
         // Key 만료 날짜 세팅
-        assertTrue(redisTemplate.expireAt("key1", Date.from(LocalDateTime.now().plusDays(1L).atZone(ZoneId.systemDefault()).toInstant())));
+        Boolean expireAt = redisTemplate.expireAt("key1",
+                Date.from(
+                        LocalDateTime.now()
+                                .plusDays(1L)
+                                .atZone(
+                                        ZoneId.systemDefault()
+                                )
+                                .toInstant()));
+        assertTrue(expireAt);
         // Key 만료 시간 세팅
-        assertTrue(redisTemplate.expire("key1", 60, TimeUnit.SECONDS));
+        Boolean expire = redisTemplate.expire("key1", 60, TimeUnit.SECONDS);
+        assertTrue(expire);
+
         // Key 만료 시간 조회
         assertThat(redisTemplate.getExpire("key1"), greaterThan(0L));
+
         // Key 만료 시간 해제
-        boolean persist = redisTemplate.persist("key1");
+        Boolean persist = redisTemplate.persist("key1");
         System.out.println("persist : " + persist);
         assertTrue(persist);
+
         // Key 만료시간이 세팅 안되어있는경우 -1 반환
         assertSame(-1L, redisTemplate.getExpire("key1"));
         // Key 삭제
         assertTrue(redisTemplate.delete("key1"));
         // Key 일괄 삭제
         assertThat(redisTemplate.delete(Arrays.asList("key1", "key2", "key3")), greaterThan(0L));
+    }
+
+    @Test
+    public void testHash() {
+        String hashKey = "user";
+
+        hashOperations = redisTemplate.opsForHash();
+        hashOperations.put(hashKey, "hashKey", User.builder().id("id").name("seok").build());
+        hashOperations.put(hashKey, "hashKey2", User.builder().id("id").name("seok2").build());
+
+        /* hashOperations의 entry를 조회*/
+        Map<Object, User> hashMap = hashOperations.entries("user");
+
+        /* redis 의 데이터의 유효기간을 설정 */
+        redisTemplate.expireAt(hashKey, Date.from(
+                LocalDateTime.now()
+                        .plusSeconds(20)
+                        .atZone(
+                                ZoneId.systemDefault()
+                        )
+                        .toInstant())
+        );
+        System.out.println("key : " + hashKey + " -> expiredAt : " + redisTemplate.getExpire(hashKey));
+
+        /* hgetall {key}로 검색 */
+        for(Object key : hashMap.keySet()) {
+            String k = (String) key;
+            User user = (User) hashMap.get(k);
+            System.out.println("key : " + key + "\t\t value : " + user.getName());
+        }
+
+        /* 해당 키 값의 expire 값을 확인 */
+        System.out.println("expireAt : " + hashOperations.getOperations().getExpire("key") + " 초");
+    }
+
+    @Test
+    public void testSet() {
+        String setKey = "setKey";
+        setOperations = redisTemplate.opsForSet();
+        setOperations.add(setKey, "setValue01");
+        setOperations.add(setKey, "setValue02");
+        setOperations.add(setKey, "setValue03");
+        /* redisTemplate 통해 특정 key 값의 유효기간을 설정 */
+        redisTemplate.expireAt(setKey, Date.from(LocalDateTime.now().plusSeconds(20).atZone(ZoneId.systemDefault()).toInstant()));
+
+        /* smembers * */
+        Set<String> sets = setOperations.members(setKey);
+
+        /* 입력한 key 값 내에 리스트 형태로 확인 */
+        for(String key : sets) {
+            System.out.println(key);
+        }
+    }
+
+    /* 가중치 값을 포함하는 데이터 형태 */
+    @Test
+    public void testZSet() {
+        zSetOperations = redisTemplate.opsForZSet();
+
+        zSetOperations.add("zSet", "tuple", 1);
+        zSetOperations.add("zSet", "tuple1", 2);
+        zSetOperations.add("zSet", "tuple2", 3);
+        redisTemplate.expireAt("zSet", Date.from(LocalDateTime.now().plusSeconds(20).atZone(ZoneId.systemDefault()).toInstant()));
+
+        /* zSet에 담겨 있는 값의 크기 확인 */
+        Long size = zSetOperations.size("zSet");
+        System.out.println("zSet Size : " + size);
+
+        /* range 라는 메서드로 slice 해서 Set<String>에 보관 가능 */
+        Set<String> sets = zSetOperations.range("zSet", 0, size);
+        for( String set : sets) {
+            System.out.println(set);
+        }
+
     }
 }
