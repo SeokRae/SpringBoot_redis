@@ -1,6 +1,6 @@
 package com.sample.config;
 
-import com.sample.domain.User;
+import com.sample.domain.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
@@ -42,7 +42,7 @@ public class RedisConfig {
         /* hashOperations<String, Object, Object>를 사용하는 경우 두 번째 파라미터가 HashKey */
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
         /* hashOperations<String, Object, Object>를 사용하는 경우 세 번째 파라미터가 HashValue */
-        redisTemplate.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(User.class));
+        redisTemplate.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(Account.class));
 
         /* 트랜잭션 ?*/
         redisTemplate.setEnableTransactionSupport(true);

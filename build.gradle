@@ -37,5 +37,10 @@ dependencies {
     implementation('org.projectlombok:lombok')
     annotationProcessor("org.projectlombok:lombok")
 
+    // jwt token
+    implementation('io.jsonwebtoken:jjwt-api:0.10.5')
+    runtimeOnly('io.jsonwebtoken:jjwt-impl:0.10.5',
+            'io.jsonwebtoken:jjwt-jackson:0.10.5')
+
     testImplementation('org.springframework.boot:spring-boot-starter-test')
 }
