@@ -1,4 +1,4 @@
-package com.sample.utils;
+package com.sample.component.utils;
 
 import com.sample.domain.dtos.AccountBasicInfo;
 import io.jsonwebtoken.*;
@@ -8,11 +8,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.security.Key;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.sample.component.utils.JwtConst.getDate;
 
 @Slf4j
 public class JwtUtils {
@@ -60,13 +60,8 @@ public class JwtUtils {
      * @return 만료일자 반환
      */
     private Date createDate(int plusTime) {
-        Date date = Date.from(
-                LocalDateTime.now()
-                        .plusMinutes(plusTime)
-                        .atZone(ZoneId.systemDefault())
-                        .toInstant()
-        );
-        log.info("Token 3: create{}: {}", (plusTime == JwtConst.DEFAULT_EXPIRED ? "issueAt Time" : "expireAt Time"), date.getTime());
+        Date date = getDate(plusTime);
+        log.info("Token 3: create {}: {}", (plusTime == JwtConst.DEFAULT_EXPIRED ? "IssueAt Time" : "ExpireAt Time"), date.getTime());
         return date;
     }
 
@@ -158,12 +153,12 @@ public class JwtUtils {
         } catch (UnsupportedJwtException exception) {
             log.error("암호화된 JWT를 사용하는 애프리케이션에 암호화되지 않은 JWT가 전달되는 경우");
         /* access Token 예외 발생으로 인해 refreshToken 체크 시점 */
-//        } catch (ExpiredJwtException exception) {
-//            log.error("Token ExpiredJwtException");
+        } catch (ExpiredJwtException exception) {
+            log.error("Token ExpiredJwtException");
         } catch (PrematureJwtException exception) {
             log.error("접근이 허용되기 전인 JWT가 수신된 경우");
         } catch (ClaimJwtException exception) {
-            log.error("JWT 권한claim 검사가 실패했을 때");
+            log.error("JWT Claim 검사가 실패했을 때");
         } catch (JwtException exception) {
             log.error("Token Tampered");
         } catch (NullPointerException exception) {

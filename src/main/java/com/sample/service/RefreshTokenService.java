@@ -14,18 +14,18 @@ public class RefreshTokenService {
 
     /* accessToken 만료 시 refreshToken 확인해서 재발급 하기 위한 메서드 */
     @Transactional(readOnly = true)
-    public String getRefreshTokenByUserName(String userName) {
-        return refreshTokenRepository.findByUserName(userName)
+    public String getRefreshTokenByAccessToken(String accessToken) {
+        return refreshTokenRepository.findByAccessToken(accessToken)
                 .map(RefreshToken::getRefreshToken)
                 .orElseGet(() -> {throw new RuntimeException();});
     }
 
     /* refreshToken 발급 시 DB 저장 */
     @Transactional
-    public void add(String userName , String refreshToken) {
+    public void add(String accessToken , String refreshToken) {
         /* 생성된 리플레시 토큰을 DB에 적재 */
         RefreshToken reToken = RefreshToken.builder()
-                .userName(userName)
+                .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
 

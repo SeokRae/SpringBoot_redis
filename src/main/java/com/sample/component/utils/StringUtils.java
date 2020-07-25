@@ -1,4 +1,4 @@
-package com.sample.utils;
+package com.sample.component.utils;
 
 public class StringUtils {
     public static String getOrDefault(String value, String defaultVal) {

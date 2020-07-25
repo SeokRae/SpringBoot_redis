@@ -1,5 +1,6 @@
 package com.sample.domain;
 
+import com.sample.domain.base.TimeEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

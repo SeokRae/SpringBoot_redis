@@ -19,6 +19,7 @@
 
 - key에 expireAt 설정 가능, hashKey에 expireAt 설정 불가능
 
+- Redis에 key 
 - redis-cli
 
 ```shell script

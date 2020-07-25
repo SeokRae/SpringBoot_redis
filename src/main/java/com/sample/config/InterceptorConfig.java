@@ -1,7 +1,7 @@
 package com.sample.config;
 
-import com.sample.interceptor.AuthenticationInterceptor;
-import com.sample.interceptor.AuthorizationInterceptor;
+import com.sample.component.interceptor.AuthenticationInterceptor;
+import com.sample.component.interceptor.AuthorizationInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.HandlerInterceptor;
