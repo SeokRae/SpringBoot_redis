@@ -31,7 +31,10 @@ dependencies {
     /* Redis Dependency */
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
+    /* h2 */
     runtimeOnly("com.h2database:h2")
+    /* mysql */
+    runtimeOnly("mysql:mysql-connector-java")
 
     // lombok
     implementation('org.projectlombok:lombok')

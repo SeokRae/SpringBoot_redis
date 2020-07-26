@@ -98,9 +98,9 @@ public class JwtUtils {
      * @return JWT의 payload decode
      */
     private Claims getClaimsFormToken(String token) {
-        log.info("token parse: {}", Jwts.parser().setSigningKey(key).parseClaimsJws(token));
-        log.info("token Header: {}", Jwts.parser().setSigningKey(key).parseClaimsJws(token).getHeader());
-        log.info("token Body: {}", Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody());
+        log.info("[Token] parse: {}", Jwts.parser().setSigningKey(key).parseClaimsJws(token));
+        log.info("[Token] Header: {}", Jwts.parser().setSigningKey(key).parseClaimsJws(token).getHeader());
+        log.info("[Token] Body: {}", Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody());
         return Jwts.parser()
                 .setSigningKey(key)
                 .parseClaimsJws(token).getBody();
@@ -134,35 +134,34 @@ public class JwtUtils {
     public boolean isValidToken(String token) throws ExpiredJwtException {
         try {
             log.info("=================== Claims ===================");
-            log.info("requestToken : {}", token);
+            log.info("[Token] requestToken : {}", token);
             Claims claims = getClaimsFormToken(token);
-            log.info("claims : {}", claims);
-            log.info("expireTime : {}", Date.from(claims.getExpiration().toInstant())); // time은 정해진 포맷이 있어야 할 것 같은데 ?
-            log.info("Id :" + claims.get("id"));
-            log.info("Audience :" + claims.getAudience());
-            log.info("Issuer :" + claims.getIssuer());
-            log.info("IssuedAt :" + claims.getIssuedAt().getTime());
-            log.info("Subject :" + claims.getSubject());
-            log.info("NotBefore :" + claims.getNotBefore());
+            log.info("[Token Claims] {}", claims);
+            log.info("[Token Registered Claims] expireTime : {}", Date.from(claims.getExpiration().toInstant())); // time은 정해진 포맷이 있어야 할 것 같은데 ?
+            log.info("[Token Registered Claims] Audience :" + claims.getAudience());
+            log.info("[Token Registered Claims] Issuer :" + claims.getIssuer());
+            log.info("[Token Registered Claims] IssuedAt :" + claims.getIssuedAt().getTime());
+            log.info("[Token Registered Claims] Subject :" + claims.getSubject());
+            log.info("[Token Public Claims] Id :" + claims.get("id"));
             log.info("=================== Claims ===================");
             return true;
         } catch (SignatureException exception) {
-            log.error("SignatureException 오류");
+            log.error("[Token SignatureException] 오류");
         } catch (MalformedJwtException exception) {
-            log.error("구조적인 문제가 있는 JWT인 경우");
+            log.error("[Token MalformedJwtException] 구조적인 문제가 있는 JWT인 경우");
         } catch (UnsupportedJwtException exception) {
-            log.error("암호화된 JWT를 사용하는 애프리케이션에 암호화되지 않은 JWT가 전달되는 경우");
+            log.error("[Token UnsupportedJwtException] 암호화된 JWT를 사용하는 애프리케이션에 암호화되지 않은 JWT가 전달되는 경우");
         /* access Token 예외 발생으로 인해 refreshToken 체크 시점 */
-        } catch (ExpiredJwtException exception) {
-            log.error("Token ExpiredJwtException");
+//        } catch (ExpiredJwtException exception) {
+//            log.error("Token ExpiredJwtException");
         } catch (PrematureJwtException exception) {
-            log.error("접근이 허용되기 전인 JWT가 수신된 경우");
+            log.error("[Token PrematureJwtException] 접근이 허용되기 전인 JWT가 수신된 경우");
         } catch (ClaimJwtException exception) {
-            log.error("JWT Claim 검사가 실패했을 때");
+            log.error("[Token ClaimJwtException] JWT Claim 검사가 실패했을 때");
         } catch (JwtException exception) {
-            log.error("Token Tampered");
+            log.error("[Token JwtException] Token Tampered");
         } catch (NullPointerException exception) {
-            log.error("Token is null");
+            log.error("[Token NullPointerException] Token is null");
             throw new RuntimeException("Token is null");
         }
         return false;

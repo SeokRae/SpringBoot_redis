@@ -2,26 +2,25 @@ package com.sample.component.interceptor;
 
 import com.sample.component.utils.JwtConst;
 import com.sample.component.utils.JwtUtils;
+import com.sample.component.utils.RedisUtils;
 import com.sample.domain.Account;
 import com.sample.domain.dtos.AccountBasicInfo;
 import com.sample.service.AccountService;
+import com.sample.service.HistoryAccessTokenService;
 import com.sample.service.RefreshTokenService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import static com.sample.component.utils.JwtConst.getDate;
 
 @Slf4j
 public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
 
+    @Autowired
+    HistoryAccessTokenService historyAccessTokenService;
     @Autowired
     private RefreshTokenService refreshTokenService;
     @Autowired
@@ -30,10 +29,7 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
     private JwtUtils jwtUtils;
 
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
-
-    @Resource(name = "redisTemplate")
-    private HashOperations<String, String, Account> hashOperations;
+    public RedisUtils redisUtils;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -54,10 +50,16 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
              *      2) Client가 서로 다른 디바이스에서 login을 하여 redis에서 관리하는 AccessToken이 한 개 이상인 경우 ?
              *      3) Redis Server의 문제로 AccessToken이 유실된 경우
              */
-            if(hashOperations.hasKey("user", accessToken)) {
+            if(redisUtils.hasKey("user:*", accessToken)) {
                 log.error("[JWT ExpiredJwtException] redis에 accessToken이 존재");
 
-                String refreshToken = refreshTokenService.getRefreshTokenByAccessToken(accessToken);
+                /* Redis에 존재하는 토큰의 Account 객체의 값으로 refreshToken 검색 -> 후 AccessToken 재발급 */
+                AccountBasicInfo accountBasicInfo = redisUtils.get("user:*", accessToken);
+
+                assert accountBasicInfo != null;
+                String userName = accountBasicInfo.getUserName();
+
+                String refreshToken = refreshTokenService.getRefreshTokenByUserName(userName);
                 log.error("[JWT ExpiredJwtException] DB 조회하여 RefreshToken 조회 후 유효성 검사 : {}", refreshToken);
 
                 if(jwtUtils.isValidToken(refreshToken)) {
@@ -72,7 +74,7 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
                 }
             } else {
                 /* Redis에 토큰이 존재 하지 않음 (Redis 서버의 문제일 수 있고, 만료기간이 지난 토큰일 수 있고, 탈취된 토큰 일 수 있다.) */
-                log.error("토큰이 redis에 없음");
+                log.error("[JWT ExpiredJwtException] Redis 내에 AccessToken 유실로 인한 DB 조회 -> AccessToken 재발급");
 
                 String refreshToken = refreshTokenService.getRefreshTokenByAccessToken(accessToken);
                 log.error("[JWT ExpiredJwtException] DB 조회하여 RefreshToken 조회 후 유효성 검사 : {}", refreshToken);
@@ -108,9 +110,13 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
 
         String newAccessToken = jwtUtils.generateToken(accountBasicInfo, JwtConst.ACCESS_EXPIRED);
         log.error("[JWT ExpiredJwtException] 새로운 AccessToken 발행 : {}", newAccessToken);
+        /* AccessToken 이력 관리 */
+        historyAccessTokenService.add(userName, newAccessToken);
 
-        hashOperations.put("user", newAccessToken, account);
-        redisTemplate.expireAt("user", getDate(JwtConst.REDIS_EXPIRED));
+        redisUtils.makeRefreshTokenAndExpiredAt(userName, newAccessToken, accountBasicInfo);
+
+        /* TODO 과연 refreshToken을 찾기 위해 accessToken으로 찾는게 맞는 것인가 ? */
+        newAccessToken = refreshTokenService.update(userName, newAccessToken);
 
         /* accessToken 재갱신 */
         return newAccessToken;

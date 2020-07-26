@@ -2,24 +2,21 @@ package com.sample.component.interceptor;
 
 import com.sample.component.utils.JwtConst;
 import com.sample.component.utils.JwtUtils;
+import com.sample.component.utils.RedisUtils;
 import com.sample.component.utils.StringUtils;
 import com.sample.domain.Account;
 import com.sample.domain.dtos.AccountBasicInfo;
 import com.sample.service.AccountService;
+import com.sample.service.HistoryAccessTokenService;
 import com.sample.service.RefreshTokenService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
-
-import static com.sample.component.utils.JwtConst.getDate;
 
 @Slf4j
 public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
@@ -30,17 +27,17 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
     @Autowired
     private RefreshTokenService refreshTokenService;
 
-    @Resource(name = "redisTemplate")
-    private HashOperations<String, String, AccountBasicInfo> hashOperations;
-
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
-
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private RedisUtils redisUtils;
+
+    @Autowired
+    private HistoryAccessTokenService historyAccessTokenService;
+
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 
         if(!"POST".equalsIgnoreCase(request.getMethod())) {
             // method 방식이 POST가 아닌 경우 유효하지 않은 요청 방식
@@ -85,22 +82,19 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
      * 엑세스 / 리프레시 토큰 발급
      * 1. 엑세스 토큰 발환
      * 2. 리프레시 토큰 DB 저장
-     * @param accountBasicInfo request 로 DB 조회한
-     * @return
      */
     private String createTokens(AccountBasicInfo accountBasicInfo) {
         log.info("============ [Authentication Create Tokens] Start ============");
+        String userName = accountBasicInfo.getUserName();
         // 엑세스 토큰 발급 및 헤더 저장
         String accessToken = jwtUtils.generateToken(accountBasicInfo, JwtConst.ACCESS_EXPIRED);
-        // redis에 토큰 생성
+        /* 이력 저장 */
+        historyAccessTokenService.add(userName, accessToken);
+        redisUtils.makeRefreshTokenAndExpiredAt(userName, accessToken, accountBasicInfo);
 
-        hashOperations.put("user", accessToken, accountBasicInfo);
-        redisTemplate.expireAt("user", getDate(JwtConst.REDIS_EXPIRED));
-
-        log.info("redis USER, TOKEN:{}", accessToken);
         // 리프레시 토큰 발급 및 DB 저장
         String refreshToken = jwtUtils.generateToken(accountBasicInfo, JwtConst.REFRESH_EXPIRED);
-        refreshTokenService.add(accessToken, refreshToken);
+        refreshTokenService.add(userName, accessToken, refreshToken);
         log.info("============ [Authentication Create Tokens] End ============");
         return accessToken;
     }
