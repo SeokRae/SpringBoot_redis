@@ -15,8 +15,8 @@ import java.io.Serializable;
  */
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Account extends TimeEntity implements Serializable {
 
     @Id
