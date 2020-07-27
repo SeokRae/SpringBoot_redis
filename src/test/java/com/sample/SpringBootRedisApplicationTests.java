@@ -1,7 +1,9 @@
 package com.sample;
 
+import com.sample.component.utils.JwtConst;
 import com.sample.domain.User;
-import org.junit.Before;
+import com.sample.domain.dtos.AccountBasicInfo;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,9 @@ public class SpringBootRedisApplicationTests {
     private HashOperations<String, Object, User> hashOperations;
 
     @Resource(name = "redisTemplate")
+    private HashOperations<String, String, AccountBasicInfo> hash;
+
+    @Resource(name = "redisTemplate")
     private SetOperations<String, String> setOperations;
 
     @Resource(name="redisTemplate")
@@ -46,42 +51,43 @@ public class SpringBootRedisApplicationTests {
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
-
-    @Before
-    public void init() {
-
-        //list put
-        valueOperations.set("test:value", "valueOperations");
-
-        listOperations.rightPush("test:user", "detail");
-        listOperations.rightPush("test:user", "set");
-        listOperations.rightPush("test:user", "zset");
-
-        //hash put
-        hashOperations.put("test:user:detail", "name", User.builder().name("seok").build());
-        hashOperations.put("test:user:detail", "salary", User.builder().salary(10000).build());
-
-        //set put
-        setOperations.add("test:user:detail:set", "상세set1");
-        setOperations.add("test:user:detail:set", "상세set2");
-        setOperations.add("test:user:detail:set", "상세set3");
-        //zset
-        zSetOperations.add("test:user:detail:zset", "최우선사항", 1);
-        zSetOperations.add("test:user:detail:zset", "차선책", 2);
-        zSetOperations.add("test:user:detail:zset", "차차선책", 3);
-
-        redisTemplate.expireAt("test:value", dueDate());
-        redisTemplate.expireAt("test:user:detail", dueDate());
-        redisTemplate.expireAt("test:user:detail:set", dueDate());
-        redisTemplate.expireAt("test:user:detail:zset", dueDate());
-
-    }
+//
+//    @Before
+//    public void init() {
+//
+//        //list put
+//        valueOperations.set("test:value", "valueOperations");
+//
+//        listOperations.rightPush("test:user", "detail");
+//        listOperations.rightPush("test:user", "set");
+//        listOperations.rightPush("test:user", "zset");
+//
+//        //hash put
+//        hashOperations.put("test:user:detail", "name", User.builder().name("seok").build());
+//        hashOperations.put("test:user:detail", "salary", User.builder().salary(10000).build());
+//
+//        //set put
+//        setOperations.add("test:user:detail:set", "상세set1");
+//        setOperations.add("test:user:detail:set", "상세set2");
+//        setOperations.add("test:user:detail:set", "상세set3");
+//        //zset
+//        zSetOperations.add("test:user:detail:zset", "최우선사항", 1);
+//        zSetOperations.add("test:user:detail:zset", "차선책", 2);
+//        zSetOperations.add("test:user:detail:zset", "차차선책", 3);
+//
+//        redisTemplate.expireAt("test:value", dueDate());
+//        redisTemplate.expireAt("test:user:detail", dueDate());
+//        redisTemplate.expireAt("test:user:detail:set", dueDate());
+//        redisTemplate.expireAt("test:user:detail:zset", dueDate());
+//
+//    }
 
     private Date dueDate() {
         return Date.from(LocalDateTime.now().plusSeconds(30).atZone(ZoneId.systemDefault()).toInstant());
     }
 
     @Test
+    @Ignore
     public void redisTest1() {
 
         String user = listOperations.leftPop("test:user");
@@ -125,6 +131,7 @@ public class SpringBootRedisApplicationTests {
     }
 
     @Test
+    @Ignore
     public void commonCommand() {
         ValueOperations<String, String> valueOps = redisTemplate.opsForValue();
         valueOps.set("key1", "key1value");
@@ -163,6 +170,7 @@ public class SpringBootRedisApplicationTests {
     }
 
     @Test
+    @Ignore
     public void testHash() {
         String hashKey = "user";
 
@@ -189,6 +197,7 @@ public class SpringBootRedisApplicationTests {
     }
 
     @Test
+    @Ignore
     public void testSet() {
         String setKey = "setKey";
         setOperations = redisTemplate.opsForSet();
@@ -209,6 +218,7 @@ public class SpringBootRedisApplicationTests {
 
     /* 가중치 값을 포함하는 데이터 형태 */
     @Test
+    @Ignore
     public void testZSet() {
         zSetOperations = redisTemplate.opsForZSet();
 
@@ -227,5 +237,23 @@ public class SpringBootRedisApplicationTests {
         for( String set : sets) {
             System.out.println(set);
         }
+    }
+
+    @Test
+    public void testUser() {
+        hash = redisTemplate.opsForHash();
+        String username = "seok";
+        String accessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsImlkIjoic2VvayIsImlzcyI6InNlb2siLCJzdWIiOiIvYXV0aC9sb2dpbiIsImF1ZCI6ImNsaWVudCIsImlhdCI6MTU5NTgzNTE2NCwiZXhwIjoxNTk1ODM1MjI0fQ.Ab2IGuqLEpx3eTr7RffVqjEeVzXj1sGbFm629SJd5Wk";
+        AccountBasicInfo accountBasicInfo = AccountBasicInfo.builder().userName(username).role("USER").build();
+        hash.put(JwtConst.PREFIX_KEY + username, accessToken, accountBasicInfo);
+        redisTemplate.expireAt(JwtConst.PREFIX_KEY+ username, JwtConst.getDate(10));
+
+        Map<String, AccountBasicInfo> hashMap = hash.entries(JwtConst.PREFIX_KEY + username);
+        for(String key : hashMap.keySet()) {
+            System.out.println(key + "\t\t" + hashMap.get(key));
+        }
+
+        AccountBasicInfo aBasic = hash.get(JwtConst.PREFIX_KEY + "*", accessToken);
+        System.out.println(aBasic);
     }
 }

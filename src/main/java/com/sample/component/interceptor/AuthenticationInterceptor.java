@@ -50,6 +50,7 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
 
         // 사용자 확인 및 토큰 발급
         Account account = accountService.get(name, pw);
+
         AccountBasicInfo accountBasicInfo = AccountBasicInfo.builder()
                 .userName(account.getUserName())
                 .role(account.getRole())
@@ -86,15 +87,17 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
     private String createTokens(AccountBasicInfo accountBasicInfo) {
         log.info("============ [Authentication Create Tokens] Start ============");
         String userName = accountBasicInfo.getUserName();
-        // 엑세스 토큰 발급 및 헤더 저장
+        // 엑세스 토큰 발급 및 헤더 저장 & 리프레시 토큰 발급
         String accessToken = jwtUtils.generateToken(accountBasicInfo, JwtConst.ACCESS_EXPIRED);
-        /* 이력 저장 */
-        historyAccessTokenService.add(userName, accessToken);
-        redisUtils.makeRefreshTokenAndExpiredAt(userName, accessToken, accountBasicInfo);
-
-        // 리프레시 토큰 발급 및 DB 저장
         String refreshToken = jwtUtils.generateToken(accountBasicInfo, JwtConst.REFRESH_EXPIRED);
-        refreshTokenService.add(userName, accessToken, refreshToken);
+
+        /* 이력 저장 */
+        String signature = accessToken.split(JwtConst.SPLIT_TOKEN_SEPARATOR)[2];
+
+        redisUtils.makeRefreshTokenAndExpiredAt(signature, accessToken, accountBasicInfo);
+        refreshTokenService.add(userName, refreshToken);
+
+        historyAccessTokenService.add(userName, signature, accessToken);
         log.info("============ [Authentication Create Tokens] End ============");
         return accessToken;
     }

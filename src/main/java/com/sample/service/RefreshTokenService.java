@@ -1,13 +1,14 @@
 package com.sample.service;
 
 import com.sample.domain.RefreshToken;
-import com.sample.domain.history.HistoryRefreshToken;
 import com.sample.repository.HistoryRefreshTokenRepository;
 import com.sample.repository.RefreshTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 
 @Service
@@ -20,64 +21,36 @@ public class RefreshTokenService {
     private HistoryRefreshTokenRepository historyRefreshTokenRepository;
 
     @Transactional(readOnly = true)
-    public String getRefreshTokenByAccessToken(String accessToken) {
-        return refreshTokenRepository.findByAccessToken(accessToken)
-                .map(RefreshToken::getRefreshToken)
-                .orElseGet(() -> {throw new RuntimeException();});
-    }
-
-    @Transactional(readOnly = true)
     public String getRefreshTokenByUserName(String userName) {
-        return refreshTokenRepository.findByAccessToken(userName)
+        return refreshTokenRepository.findTopByUserNameOrderByCreatedAt(userName)
                 .map(RefreshToken::getRefreshToken)
-                .orElseGet(() -> {throw new RuntimeException();});
+                .orElseGet(null);
     }
 
     @Transactional
-    public void add(String userName, String accessToken , String refreshToken) {
+    public void add(String userName, String refreshToken) {
 
-        Optional<RefreshToken> optional = refreshTokenRepository.findByUserName(userName);
+        Optional<RefreshToken> optional = refreshTokenRepository.findTopByUserNameOrderByCreatedAt(userName);
 
         if(optional.isPresent()) {
             RefreshToken oldRefreshToken = optional.get();
-            HistoryRefreshToken historyRefreshToken = HistoryRefreshToken.builder()
-                    .userName(oldRefreshToken.getUserName())
-                    .accessToken(oldRefreshToken.getAccessToken())
-                    .refreshToken(oldRefreshToken.getRefreshToken())
-                    .createdAt(oldRefreshToken.getCreatedAt())
-                    .updatedAt(oldRefreshToken.getUpdatedAt())
-                    .build();
-
-            /* 기존 데이터 이력 저장 */
-            historyRefreshTokenRepository.save(historyRefreshToken);
-            /* 기존 데이터 해당 테이블에서 삭제 */
-            refreshTokenRepository.delete(oldRefreshToken);
-            /* 새로 생성된 refreshToken 등록 */
-            refreshTokenRepository.save(RefreshToken.builder()
-                    .userName(userName)
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken)
-                    .build()
-            );
-        } else {
-            /* 생성된 리플레시 토큰을 DB에 적재 */
-            RefreshToken reToken = RefreshToken.builder()
-                    .userName(userName)
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken)
-                    .build();
-
-            /* 리플레시토큰 저장 */
-            refreshTokenRepository.save(reToken);
+            /* 기존 refreshToken 마지막 수정 시간 변경 */
+            oldRefreshToken.lastUpdateDate(LocalDateTime.now().atZone(ZoneId.systemDefault()).toLocalDateTime());
         }
+        /* 생성된 리플레시 토큰을 DB에 적재 */
+        refreshTokenRepository.save(
+                RefreshToken.builder()
+                        .userName(userName)
+                        .refreshToken(refreshToken)
+                        .build());
     }
 
     @Transactional
-    public String update(String userName, String accessToken) {
-        return refreshTokenRepository.findByUserName(userName)
+    public void update(String userName) {
+        refreshTokenRepository.findByUserName(userName)
                 .map(refreshToken -> {
-                    refreshToken.updateToken(accessToken);
-                    return refreshToken.getAccessToken();
+                    refreshToken.lastUpdateDate(LocalDateTime.now().atZone(ZoneId.systemDefault()).toLocalDateTime());
+                    return refreshToken.getRefreshToken();
                 })
                 .orElseThrow(() -> new RuntimeException("토큰 값이 존재하지 않음"));
     }

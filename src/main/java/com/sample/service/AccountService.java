@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Slf4j
@@ -39,7 +40,7 @@ public class AccountService {
     /* 사용자 명, 비밀번호로 정보 조회 */
     @Transactional(readOnly = true)
     public Account get(String name, String pw) {
-        return accountRepository.findByUserNameAndUserPw(name, pw);
+        return accountRepository.findByUserNameAndUserPw(name, pw).orElseGet( null);
     }
 
     /* 사용자 명으로 사용자 조회 */

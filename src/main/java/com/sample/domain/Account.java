@@ -1,6 +1,7 @@
 package com.sample.domain;
 
 import com.sample.domain.base.TimeEntity;
+import com.sample.domain.dtos.AccountBasicInfo;
 import lombok.*;
 
 import javax.persistence.Entity;
@@ -35,5 +36,12 @@ public class Account extends TimeEntity implements Serializable {
 
     public void update(String name) {
         this.userName = name;
+    }
+
+    public AccountBasicInfo toEntity() {
+        return AccountBasicInfo.builder()
+                .userName(userName)
+                .role(role)
+                .build();
     }
 }

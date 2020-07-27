@@ -30,8 +30,8 @@ public class RedisUtils {
         return hashOperations.get(key, hashKey);
     }
 
-    public void makeRefreshTokenAndExpiredAt(final String userName, String accessToken, AccountBasicInfo accountBasicInfo) {
-        hashOperations.put("user:" + userName, accessToken, accountBasicInfo);
-        redisTemplate.expireAt("user:" + userName, getDate(JwtConst.REDIS_EXPIRED));
+    public void makeRefreshTokenAndExpiredAt(String signature, String accessToken, AccountBasicInfo accountBasicInfo) {
+        hashOperations.put(JwtConst.PREFIX_KEY + signature, accessToken, accountBasicInfo);
+        redisTemplate.expireAt(JwtConst.PREFIX_KEY + signature, getDate(JwtConst.REDIS_EXPIRED));
     }
 }
