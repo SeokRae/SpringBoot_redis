@@ -36,5 +36,6 @@ smember {key}
 zrange {key} 0 3
 ```
 
-
-
+## Redis Architecture
+- [Authentication](https://docs.google.com/presentation/d/1RpUnnnr9dNuPOJTS11RpR02qErl2GBBfiUr7JeBtsLs/edit?usp=sharing)
+- [Authorization](https://docs.google.com/presentation/d/1RpUnnnr9dNuPOJTS11RpR02qErl2GBBfiUr7JeBtsLs/edit?usp=sharing)
