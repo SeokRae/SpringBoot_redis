@@ -1,10 +1,7 @@
 package com.sample.domain;
 
 import com.sample.domain.base.TimeEntity;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,7 +15,7 @@ import java.io.Serializable;
  */
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString
 public class Account extends TimeEntity implements Serializable {
 

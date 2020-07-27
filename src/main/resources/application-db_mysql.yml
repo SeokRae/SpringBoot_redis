@@ -3,29 +3,25 @@ spring:
     console:
       enabled: true
 
-  database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
-  hibernate:
-    naming:
-    implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
-        ddl-auto: none # 실행하지 않음
-  #      ddl-auto: create-drop # 어플리케이션이 구동되고 Session이 시작될때 drop -> create 이 실행되고, Session이 종료될때 (어플리케이션 종료) drop
-#    ddl-auto: create # 어플리케이션이 구동되고 Session이 시작될때 drop -> create 이 실행
-#        ddl-auto: update # 스키마가 변경된 경우에만 실행
-  #      ddl-auto: validate # 변경여부 확인 후 출력, 어플리케이션은 종료
-
   # JPA 설정
   jpa:
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     generate-ddl: true
     show_sql: true
     properties:
       hibernate:
+        ddl-auto: none # 실행하지 않음
+#       ddl-auto: create-drop # 어플리케이션이 구동되고 Session이 시작될때 drop -> create 이 실행되고, Session이 종료될때 (어플리케이션 종료) drop
+#       ddl-auto: create # 어플리케이션이 구동되고 Session이 시작될때 drop -> create 이 실행
+#       ddl-auto: update # 스키마가 변경된 경우에만 실행
+#       ddl-auto: validate # 변경여부 확인 후 출력, 어플리케이션은 종료
         format_sql: true
 
       open-in-view: false
 
   datasource:
     sql-script-encoding: UTF-8
-    url: jdbc:mysql://{ip}:{port}/{db_name}
-    username: {username}
-    password: {password}
+    url: jdbc:mysql://192.168.44.64:3306/healtheat
+    username: root
+    password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver

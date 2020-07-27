@@ -2,6 +2,7 @@ package com.sample.domain;
 
 import com.sample.domain.base.TimeEntity;
 import com.sample.domain.history.HistoryRefreshToken;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ import javax.persistence.Id;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RefreshToken extends TimeEntity {
 
     @Id

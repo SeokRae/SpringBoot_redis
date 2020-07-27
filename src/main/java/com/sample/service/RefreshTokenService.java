@@ -44,6 +44,8 @@ public class RefreshTokenService {
                     .userName(oldRefreshToken.getUserName())
                     .accessToken(oldRefreshToken.getAccessToken())
                     .refreshToken(oldRefreshToken.getRefreshToken())
+                    .createdAt(oldRefreshToken.getCreatedAt())
+                    .updatedAt(oldRefreshToken.getUpdatedAt())
                     .build();
 
             /* 기존 데이터 이력 저장 */

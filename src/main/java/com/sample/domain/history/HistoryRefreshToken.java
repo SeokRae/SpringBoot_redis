@@ -5,10 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -22,10 +20,20 @@ public class HistoryRefreshToken extends TimeEntity {
     private String refreshToken;
     private String userName;
 
+    /* 굳이 오버라이딩 안하고 필드 만들어서 집어 넣어도 됨 */
+    @AttributeOverride(name = "createdAt", column = @Column(name = "createdAt"))
+    private LocalDateTime createdAt;
+
+    /* 상기 동일 - 일단 데이터 쌓고 있어서 오버라이딩해서 사용 중 */
+    @AttributeOverride(name = "updatedAt", column = @Column(name = "updatedAt"))
+    private LocalDateTime updatedAt;
+
     @Builder
-    public HistoryRefreshToken(String accessToken, String refreshToken, String userName) {
+    public HistoryRefreshToken(String accessToken, String refreshToken, String userName, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.userName = userName;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 }
