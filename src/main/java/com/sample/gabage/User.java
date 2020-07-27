@@ -1,4 +1,4 @@
-package com.sample.domain;
+package com.sample.gabage;
 
 import lombok.Builder;
 import lombok.Getter;

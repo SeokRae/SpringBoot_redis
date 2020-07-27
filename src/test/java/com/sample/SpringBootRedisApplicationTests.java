@@ -1,7 +1,7 @@
 package com.sample;
 
 import com.sample.component.utils.JwtConst;
-import com.sample.domain.User;
+import com.sample.gabage.User;
 import com.sample.domain.dtos.AccountBasicInfo;
 import org.junit.Ignore;
 import org.junit.Test;

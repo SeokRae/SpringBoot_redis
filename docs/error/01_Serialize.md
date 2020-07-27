@@ -8,13 +8,13 @@
 @Getter
 @NoArgsConstructor
 public class User implements Serializable {
-
+}
 ```
 
 ```shell script
-2020-07-18 18:17:41.430 ERROR 2399 --- [nio-8080-exec-3] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed; nested exception is org.springframework.data.redis.serializer.SerializationException: Cannot serialize; nested exception is org.springframework.core.serializer.support.SerializationFailedException: Failed to serialize object using DefaultSerializer; nested exception is java.lang.IllegalArgumentException: DefaultSerializer requires a Serializable payload but received an object of type [com.sample.domain.User]] with root cause
+2020-07-18 18:17:41.430 ERROR 2399 --- [nio-8080-exec-3] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed; nested exception is org.springframework.data.redis.serializer.SerializationException: Cannot serialize; nested exception is org.springframework.core.serializer.support.SerializationFailedException: Failed to serialize object using DefaultSerializer; nested exception is java.lang.IllegalArgumentException: DefaultSerializer requires a Serializable payload but received an object of type [com.sample.gabage.User]] with root cause
 
-java.lang.IllegalArgumentException: DefaultSerializer requires a Serializable payload but received an object of type [com.sample.domain.User]
+java.lang.IllegalArgumentException: DefaultSerializer requires a Serializable payload but received an object of type [com.sample.gabage.User]
 	at org.springframework.core.serializer.DefaultSerializer.serialize(DefaultSerializer.java:43) ~[spring-core-5.1.10.RELEASE.jar:5.1.10.RELEASE]
 	at org.springframework.core.serializer.support.SerializingConverter.convert(SerializingConverter.java:63) ~[spring-core-5.1.10.RELEASE.jar:5.1.10.RELEASE]
 	at org.springframework.core.serializer.support.SerializingConverter.convert(SerializingConverter.java:35) ~[spring-core-5.1.10.RELEASE.jar:5.1.10.RELEASE]
@@ -30,7 +30,7 @@ java.lang.IllegalArgumentException: DefaultSerializer requires a Serializable pa
 	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:186) ~[spring-aop-5.1.10.RELEASE.jar:5.1.10.RELEASE]
 	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:689) ~[spring-aop-5.1.10.RELEASE.jar:5.1.10.RELEASE]
 	at com.sample.repository.UserRepositoryImpl$$EnhancerBySpringCGLIB$$7ddf8747.save(<generated>) ~[main/:na]
-	at com.sample.controller.UserController.add(UserController.java:22) ~[main/:na]
+	at com.sample.gabage.UserController.add(UserController.java:22) ~[main/:na]
 	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.8.0_251]
 	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[na:1.8.0_251]
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:1.8.0_251]

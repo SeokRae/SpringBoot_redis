@@ -1,6 +1,5 @@
-package com.sample.repository;
+package com.sample.gabage;
 
-import com.sample.domain.User;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;

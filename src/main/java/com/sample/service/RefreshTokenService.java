@@ -1,7 +1,6 @@
 package com.sample.service;
 
 import com.sample.domain.RefreshToken;
-import com.sample.repository.HistoryRefreshTokenRepository;
 import com.sample.repository.RefreshTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,12 +16,9 @@ public class RefreshTokenService {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
-    @Autowired
-    private HistoryRefreshTokenRepository historyRefreshTokenRepository;
-
     @Transactional(readOnly = true)
     public String getRefreshTokenByUserName(String userName) {
-        return refreshTokenRepository.findTopByUserNameOrderByCreatedAt(userName)
+        return refreshTokenRepository.findTopByUserNameOrderByCreatedAtDesc(userName)
                 .map(RefreshToken::getRefreshToken)
                 .orElseGet(null);
     }
@@ -30,7 +26,7 @@ public class RefreshTokenService {
     @Transactional
     public void add(String userName, String refreshToken) {
 
-        Optional<RefreshToken> optional = refreshTokenRepository.findTopByUserNameOrderByCreatedAt(userName);
+        Optional<RefreshToken> optional = refreshTokenRepository.findTopByUserNameOrderByCreatedAtDesc(userName);
 
         if(optional.isPresent()) {
             RefreshToken oldRefreshToken = optional.get();
@@ -47,7 +43,7 @@ public class RefreshTokenService {
 
     @Transactional
     public void update(String userName) {
-        refreshTokenRepository.findByUserName(userName)
+        refreshTokenRepository.findTopByUserNameOrderByCreatedAtDesc(userName)
                 .map(refreshToken -> {
                     refreshToken.lastUpdateDate(LocalDateTime.now().atZone(ZoneId.systemDefault()).toLocalDateTime());
                     return refreshToken.getRefreshToken();

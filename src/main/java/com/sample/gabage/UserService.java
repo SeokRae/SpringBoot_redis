@@ -1,7 +1,5 @@
-package com.sample.service;
+package com.sample.gabage;
 
-import com.sample.domain.User;
-import com.sample.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
