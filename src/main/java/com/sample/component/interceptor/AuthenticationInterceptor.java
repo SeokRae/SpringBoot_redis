@@ -88,8 +88,8 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
         log.info("============ [Authentication Create Tokens] Start ============");
         String userName = accountBasicInfo.getUserName();
         // 엑세스 토큰 발급 및 헤더 저장 & 리프레시 토큰 발급
-        String accessToken = jwtUtils.generateToken(accountBasicInfo, JwtConst.ACCESS_EXPIRED);
         String refreshToken = jwtUtils.generateToken(accountBasicInfo, JwtConst.REFRESH_EXPIRED);
+        String accessToken = jwtUtils.generateToken(accountBasicInfo, JwtConst.ACCESS_EXPIRED);
 
         /* 이력 저장 */
         String signature = accessToken.split(JwtConst.SPLIT_TOKEN_SEPARATOR)[2];

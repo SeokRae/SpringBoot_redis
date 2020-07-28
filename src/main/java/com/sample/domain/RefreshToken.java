@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -23,13 +22,13 @@ public class RefreshToken extends TimeEntity {
 
     /* 상기 동일 - 일단 데이터 쌓고 있어서 오버라이딩해서 사용 중 */
     @AttributeOverride(name = "updatedAt", column = @Column(name = "updatedAt"))
-    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     @Builder
-    public RefreshToken(String userName, String refreshToken) {
+    public RefreshToken(String userName, String refreshToken, LocalDateTime updatedAt) {
         this.userName = userName;
         this.refreshToken = refreshToken;
+        this.updatedAt = updatedAt;
     }
 
     public void lastUpdateDate(LocalDateTime updatedAt) {

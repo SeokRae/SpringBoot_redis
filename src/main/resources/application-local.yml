@@ -1,5 +1,5 @@
 spring.profiles: local
-spring.profiles.include: db_h2, jwt, redis
+spring.profiles.include: db_mysql, jwt, redis
 
 spring:
   jpa:

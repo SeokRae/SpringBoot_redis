@@ -104,7 +104,6 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
 
         /* AccessToken 이력 관리 -> 추후 Redis AOF로 변경 */
         historyAccessTokenService.add(userName, signature, newAccessToken);
-        refreshTokenService.update(userName);
         redisUtils.makeRefreshTokenAndExpiredAt(signature, newAccessToken, accountBasicInfo);
 
         /* accessToken 재갱신 */
