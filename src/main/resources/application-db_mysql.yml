@@ -13,7 +13,7 @@ spring:
         ddl-auto: update # 스키마가 변경된 경우에만 실행
         format_sql: true
 #        ddl-auto: none # 실행하지 않음
-#       ddl-auto: create-drop # 어플리케이션이 구동되고 Session이 시작될때 drop -> create 이 실행되고, Session이 종료될때 (어플리케이션 종료) drop
+#        ddl-auto: create-drop # 어플리케이션이 구동되고 Session이 시작될때 drop -> create 이 실행되고, Session이 종료될때 (어플리케이션 종료) drop
 #        ddl-auto: create # 어플리케이션이 구동되고 Session이 시작될때 drop -> create 이 실행
 #       ddl-auto: validate # 변경여부 확인 후 출력, 어플리케이션은 종료
 
@@ -24,9 +24,9 @@ spring:
     # 휴대폰 테더링
 #    url: jdbc:mysql://192.168.44.64:3306/healtheat
     # 집 와이파이
-#    url: jdbc:mysql://172.30.1.59:3306/healtheat
+    url: jdbc:mysql://172.30.1.59:3306/healtheat
     # 투썸 플레이스
-    url: jdbc:mysql://192.168.0.64:3306/healtheat
+#    url: jdbc:mysql://192.168.0.64:3306/healtheat
     # 더룸
 #    url: jdbc:mysql://192.168.35.2:3306/healtheat
     username: root

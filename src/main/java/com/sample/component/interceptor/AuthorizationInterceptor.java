@@ -8,6 +8,7 @@ import com.sample.domain.dtos.AccountBasicInfo;
 import com.sample.service.AccountService;
 import com.sample.service.HistoryAccessTokenService;
 import com.sample.service.RefreshTokenService;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
@@ -28,10 +29,9 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
     @Autowired
     private AccountService accountService;
     @Autowired
-    private JwtUtils jwtUtils;
-
-    @Autowired
     public RedisUtils redisUtils;
+    @Autowired
+    private JwtUtils jwtUtils;
 
     @Resource(name = "redisTemplate")
     private HashOperations<String, String, AccountBasicInfo> hashOperations;
@@ -44,28 +44,31 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
 
         log.info("[JWT InvalidCheck] Request URL : {}", request.getRequestURL());
         /* resources 접근에 대한 인가 / 권한 처리를 위한 AccessToken 유효성 검사 */
-        if(!jwtUtils.isValidToken(accessToken)) {
+        try {
+            if(jwtUtils.isValidToken(accessToken)) {
+                log.info("[JWT Invalid]");
+                return true;
+            }
+        } catch (ExpiredJwtException e) {
+
             log.error("[JWT ExpiredJwtException] 발생 -> AccessToken 재발행 프로세스 시작 !!");
-            String signature = accessToken.split(JwtConst.SPLIT_TOKEN_SEPARATOR)[2];
-            String signKey = JwtConst.PREFIX_KEY + signature;
-            boolean redisHasToken = redisUtils.hasKey(JwtConst.PREFIX_KEY + signature, accessToken);
-            /*
-             *  Request - accessToken 이 Server에서 관리하는 Redis Server의 목록에 있는지 조회
-             *  1. Redis의 AccessToken은 로그인 시 Client에 발급한 AccessToken과 동일한 값이 저장되어 있다. --> 사용자 인증 가능
-             *  2. Redis의 AccessToken과 Client가 보낸 AccessToken이 매핑이 안되는 경우
-             *      1) Client에서 보낸 AccessToken을 변조해서 보내는 경우
-             *      2) Client가 서로 다른 디바이스에서 login을 하여 redis에서 관리하는 AccessToken이 한 개 이상인 경우 ?
-             *      3) Redis Server의 문제로 AccessToken이 유실된 경우 ?
-             */
+            String userNameInToken = (String) e.getClaims().get("id");
+            log.info("[JWT ExpiredJwtException] Exception의 계정정보 {}", userNameInToken);
+            String signKey = JwtConst.PREFIX_KEY + userNameInToken;
+
+            /* Redis 내에 Token 확인 */
+            boolean redisHasToken = redisUtils.hasKey(signKey, accessToken);
+
             if(redisHasToken) {
+                /* Redis의 Token 값 확인 후 RefreshToken에 접근 할 데이터 조회 */
                 AccountBasicInfo accountBasicInfo = redisUtils.get(signKey, accessToken);
                 log.error("[JWT ExpiredJwtException] redis에 accessToken이 존재");
 
                 /* Redis에 존재하는 토큰의 Account 객체의 값으로 refreshToken 검색 -> 후 AccessToken 재발급 */
                 assert accountBasicInfo != null;
-                String userName = accountBasicInfo.getUserName();
+                String userNameInHashValue = accountBasicInfo.getUserName();
 
-                String refreshToken = refreshTokenService.getRefreshTokenByUserName(userName);
+                String refreshToken = refreshTokenService.getRefreshTokenByUserName(userNameInHashValue);
                 log.error("[JWT ExpiredJwtException] DB 조회하여 RefreshToken 조회 후 유효성 검사 : {}", refreshToken);
 
                 if(jwtUtils.isValidToken(refreshToken)) {
@@ -85,9 +88,7 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
             }
         }
         /* resources 접근을 위한 accessToken의 유효성 체크 완료 -> resources에 정상 접근 */
-
-        log.info("권한에 따른 로직 필요");
-        return true;
+        return false;
     }
 
     /* AccessToken 재발급 로직 */
@@ -99,12 +100,11 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
 
         AccountBasicInfo accountBasicInfo = account.toEntity();
         String newAccessToken = jwtUtils.generateToken(accountBasicInfo, JwtConst.ACCESS_EXPIRED);
-        String signature = newAccessToken.split(JwtConst.SPLIT_TOKEN_SEPARATOR)[2];
         log.error("[JWT ExpiredJwtException] 새로운 AccessToken 발행 : {}", newAccessToken);
 
         /* AccessToken 이력 관리 -> 추후 Redis AOF로 변경 */
-        historyAccessTokenService.add(userName, signature, newAccessToken);
-        redisUtils.makeRefreshTokenAndExpiredAt(signature, newAccessToken, accountBasicInfo);
+        historyAccessTokenService.add(userName, newAccessToken);
+        redisUtils.makeRefreshTokenAndExpiredAt(userName, newAccessToken, accountBasicInfo);
 
         /* accessToken 재갱신 */
         return newAccessToken;

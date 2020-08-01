@@ -91,13 +91,10 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
         String refreshToken = jwtUtils.generateToken(accountBasicInfo, JwtConst.REFRESH_EXPIRED);
         String accessToken = jwtUtils.generateToken(accountBasicInfo, JwtConst.ACCESS_EXPIRED);
 
-        /* 이력 저장 */
-        String signature = accessToken.split(JwtConst.SPLIT_TOKEN_SEPARATOR)[2];
-
-        redisUtils.makeRefreshTokenAndExpiredAt(signature, accessToken, accountBasicInfo);
+        redisUtils.makeRefreshTokenAndExpiredAt(userName, accessToken, accountBasicInfo);
         refreshTokenService.add(userName, refreshToken);
 
-        historyAccessTokenService.add(userName, signature, accessToken);
+        historyAccessTokenService.add(userName, accessToken);
         log.info("============ [Authentication Create Tokens] End ============");
         return accessToken;
     }

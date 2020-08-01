@@ -20,13 +20,11 @@ public class HistoryAccessToken extends TimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String userName;
-    private String signature;
     private String accessToken;
 
     @Builder
-    public HistoryAccessToken(String userName, String signature, String accessToken) {
+    public HistoryAccessToken(String userName, String accessToken) {
         this.userName = userName;
-        this.signature = signature;
         this.accessToken = accessToken;
     }
 }

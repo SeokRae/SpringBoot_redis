@@ -131,7 +131,7 @@ public class JwtUtils {
     /**
      * @param token 토큰의 유효성 검사
      */
-    public boolean isValidToken(String token) throws ExpiredJwtException {
+    public boolean isValidToken(String token) {
         try {
             log.info("=================== Claims ===================");
             log.info("[Token] requestToken : {}", token);
@@ -145,21 +145,21 @@ public class JwtUtils {
             log.info("[Token Public Claims] Id :" + claims.get("id"));
             log.info("=================== Claims ===================");
             return true;
+        } catch (PrematureJwtException exception) {
+            log.error("[Token PrematureJwtException] 접근이 허용되기 전인 JWT가 수신된 경우");
         } catch (SignatureException exception) {
             log.error("[Token SignatureException] 오류");
         } catch (MalformedJwtException exception) {
             log.error("[Token MalformedJwtException] 구조적인 문제가 있는 JWT인 경우");
+//        } catch (ClaimJwtException exception) {
+//            log.error("[Token ClaimJwtException] JWT Claim 검사가 실패했을 때");
         } catch (UnsupportedJwtException exception) {
             log.error("[Token UnsupportedJwtException] 암호화된 JWT를 사용하는 애프리케이션에 암호화되지 않은 JWT가 전달되는 경우");
         /* access Token 예외 발생으로 인해 refreshToken 체크 시점 */
 //        } catch (ExpiredJwtException exception) {
 //            log.error("Token ExpiredJwtException");
-        } catch (PrematureJwtException exception) {
-            log.error("[Token PrematureJwtException] 접근이 허용되기 전인 JWT가 수신된 경우");
-        } catch (ClaimJwtException exception) {
-            log.error("[Token ClaimJwtException] JWT Claim 검사가 실패했을 때");
-        } catch (JwtException exception) {
-            log.error("[Token JwtException] Token Tampered");
+//        } catch (JwtException exception) {
+//            log.error("[Token JwtException] Token Tampered");
         } catch (NullPointerException exception) {
             log.error("[Token NullPointerException] Token is null");
             throw new RuntimeException("Token is null");
