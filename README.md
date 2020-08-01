@@ -44,7 +44,7 @@ zrange {key} 0 3
 ## Redis 활용
 - Redis의 로그는 AOF 로 파일로 저장해야 함
     - 일일 통계 Batch를 통해 레디스의 로그 파일을 DB로 집계 처리 해야 함
- 
+
 - 사용자 접근 통계를 위한 시나리오
     - Client의 AccessToken의 유효기간을 1분으로 설정
     - Redis내에 AccessToken을 저장하는 시간을 3분으로 설정 (Redis에는 한 사용자에 대한 AccessToken이 3개까지 존재할 수 있다.)
@@ -58,4 +58,7 @@ zrange {key} 0 3
         1. refreshToken의 이력을 통해 하루 로그인 통계 값 확인 가능 (사실 accessToken을 재발급 할 때, refreshToken의 유효기간이 더 길어져야 하는게 아닌지 ?)
         2. accessToken의 이력을 통해 하나의 refreshToken당 몇개의 accessToken을 재발급 했는지 통계
         3. accessToken의 재발급된 이력 + @ 로 접근 통계 (요청 URL에 대한 이력을 쌓는 경우, 해당 자원에 대한 접근 빈도 확인 가능)
-         
+
+## Reids Token
+1. 클라이언트에 AccessToken, RefreshToken 을 모두 넘겨주는 경우 토큰 탈취에 대한 문제는 없는 것인가?
+2. Redis에서 AccessToken 을 보관하는 유효기간은 얼마나 ? 
