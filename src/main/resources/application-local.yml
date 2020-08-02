@@ -12,7 +12,7 @@ spring:
 
 logging:
   level:
-    root: info
+    root: debug
     org:
       springframework: info
       hibernate:

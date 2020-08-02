@@ -74,9 +74,11 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
         AccountBasicInfo accountBasicInfo = (AccountBasicInfo) modelMap.get("accountBasicInfo");
 
         /* 엑세스 토큰, 리프레시 토큰 발급 */
-        String accessToken = createTokens(accountBasicInfo);
+        String accessToken = createTokens(JwtConst.ACCESS_TOKEN, accountBasicInfo);
+        String refreshToken = createTokens(JwtConst.REFRESH_TOKEN, accountBasicInfo);
         response.addHeader("Authorization", "Bearer " + accessToken);
-
+        response.addHeader("refresh_token", refreshToken);
+        response.addHeader("grant_type", accountBasicInfo.getRole());
     }
 
     /**
@@ -84,18 +86,21 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
      * 1. 엑세스 토큰 발환
      * 2. 리프레시 토큰 DB 저장
      */
-    private String createTokens(AccountBasicInfo accountBasicInfo) {
+    private String createTokens(String tokenType, AccountBasicInfo accountBasicInfo) {
         log.info("============ [Authentication Create Tokens] Start ============");
         String userName = accountBasicInfo.getUserName();
+        String token = "";
         // 엑세스 토큰 발급 및 헤더 저장 & 리프레시 토큰 발급
-        String refreshToken = jwtUtils.generateToken(accountBasicInfo, JwtConst.REFRESH_EXPIRED);
-        String accessToken = jwtUtils.generateToken(accountBasicInfo, JwtConst.ACCESS_EXPIRED);
+        if(JwtConst.ACCESS_TOKEN.equals(tokenType)) {
+            token = jwtUtils.generateToken(accountBasicInfo, JwtConst.ACCESS_EXPIRED);
+            redisUtils.makeRefreshTokenAndExpiredAt(userName, token, accountBasicInfo);
+            historyAccessTokenService.add(userName, token);
 
-        redisUtils.makeRefreshTokenAndExpiredAt(userName, accessToken, accountBasicInfo);
-        refreshTokenService.add(userName, refreshToken);
-
-        historyAccessTokenService.add(userName, accessToken);
+        } else if(JwtConst.REFRESH_TOKEN.equals(tokenType)) {
+            token = jwtUtils.generateToken(accountBasicInfo, JwtConst.REFRESH_EXPIRED);
+            refreshTokenService.add(userName, token);
+        }
         log.info("============ [Authentication Create Tokens] End ============");
-        return accessToken;
+        return token;
     }
 }
