@@ -10,9 +10,10 @@ public class HistoryAccessTokenService {
     @Autowired
     private HistoryAccessTokenRepository historyAccessTokenRepository;
 
-    public void add(String userName, String accessToken) {
+    public void add(String signature, String userName, String accessToken) {
         historyAccessTokenRepository.save(HistoryAccessToken.builder()
                 .userName(userName)
+                .signature(signature)
                 .accessToken(accessToken)
                 .build());
     }

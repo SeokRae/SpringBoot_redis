@@ -48,9 +48,17 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
         try {
             /* resources 접근에 대한 인가 / 권한 처리를 위한 AccessToken 유효성 검사 */
             if(jwtUtils.isValidToken(accessToken)) {
-                /* redis에 accessToken이 있는지 확인 해야 함 */
-                log.info("[JWT Invalid]");
-                return true;
+
+                String signature = accessToken.split(JwtConst.SPLIT_TOKEN_SEPARATOR)[2];
+                if(redisUtils.hasKey(signature, accessToken)) {
+                    /* redis에 accessToken이 있는지 확인 해야 함 */
+                    log.info("[JWT Invalid]");
+                    return true;
+                } else {
+                    /* 토큰은 유효하나 Redis에 존재하고 있지 않음 */
+                    log.error("[JWT RedisServer Check]");
+                    return false;
+                }
             }
         } catch (ExpiredJwtException e) {
             try {
@@ -130,10 +138,11 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
 
         AccountBasicInfo accountBasicInfo = account.toEntity();
         String newAccessToken = jwtUtils.generateToken(accountBasicInfo, JwtConst.ACCESS_EXPIRED);
+        String signature = newAccessToken.split(JwtConst.SPLIT_TOKEN_SEPARATOR)[2];
         log.debug("[JWT ExpiredJwtException] 새로운 AccessToken 발행 : {}", newAccessToken);
 
         /* AccessToken 이력 관리 -> 추후 Redis AOF로 변경 */
-        historyAccessTokenService.add(userName, newAccessToken);
+        historyAccessTokenService.add(signature, userName, newAccessToken);
         redisUtils.makeRefreshTokenAndExpiredAt(userName, newAccessToken, accountBasicInfo);
 
         /* accessToken 재갱신 */

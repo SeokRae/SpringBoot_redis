@@ -93,8 +93,10 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
         // 엑세스 토큰 발급 및 헤더 저장 & 리프레시 토큰 발급
         if(JwtConst.ACCESS_TOKEN.equals(tokenType)) {
             token = jwtUtils.generateToken(accountBasicInfo, JwtConst.ACCESS_EXPIRED);
-            redisUtils.makeRefreshTokenAndExpiredAt(userName, token, accountBasicInfo);
-            historyAccessTokenService.add(userName, token);
+
+            String signature = token.split(JwtConst.SPLIT_TOKEN_SEPARATOR)[2];
+            redisUtils.makeRefreshTokenAndExpiredAt(signature, token, accountBasicInfo);
+            historyAccessTokenService.add(signature, userName, token);
 
         } else if(JwtConst.REFRESH_TOKEN.equals(tokenType)) {
             token = jwtUtils.generateToken(accountBasicInfo, JwtConst.REFRESH_EXPIRED);
