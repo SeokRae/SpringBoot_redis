@@ -1,6 +1,6 @@
 package com.sample.service;
 
-import com.sample.component.utils.JwtConst;
+import com.sample.component.utils.Constant;
 import com.sample.domain.RefreshToken;
 import com.sample.repository.RefreshTokenRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +44,7 @@ public class RefreshTokenService {
                 RefreshToken.builder()
                         .userName(userName)
                         .updatedAt(LocalDateTime.now()
-                                .plusMinutes(JwtConst.REFRESH_EXPIRED)
+                                .plusMinutes(Constant.RedisConst.REFRESH_EXPIRED)
                                 .atZone(ZoneId.systemDefault())
                                 .toLocalDateTime())
                         .refreshToken(refreshToken)
@@ -56,7 +56,7 @@ public class RefreshTokenService {
         refreshTokenRepository.findTopByUserNameOrderByCreatedAtDesc(userName)
                 .map(refreshToken -> {
                     refreshToken.lastUpdateDate(
-                            LocalDateTime.now().plusMinutes(JwtConst.REDIS_EXPIRED)
+                            LocalDateTime.now().plusMinutes(Constant.RedisConst.REDIS_EXPIRED)
                                     .atZone(ZoneId.systemDefault())
                                     .toLocalDateTime()
                     );

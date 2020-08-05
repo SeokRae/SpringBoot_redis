@@ -1,6 +1,6 @@
 package com.sample.component.interceptor;
 
-import com.sample.component.utils.JwtConst;
+import com.sample.component.utils.Constant;
 import com.sample.component.utils.JwtUtils;
 import com.sample.component.utils.RedisUtils;
 import com.sample.component.utils.StringUtils;
@@ -74,8 +74,8 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
         AccountBasicInfo accountBasicInfo = (AccountBasicInfo) modelMap.get("accountBasicInfo");
 
         /* 엑세스 토큰, 리프레시 토큰 발급 */
-        String accessToken = createTokens(JwtConst.ACCESS_TOKEN, accountBasicInfo);
-        String refreshToken = createTokens(JwtConst.REFRESH_TOKEN, accountBasicInfo);
+        String accessToken = createTokens(Constant.JwtConst.ACCESS_TOKEN, accountBasicInfo);
+        String refreshToken = createTokens(Constant.JwtConst.REFRESH_TOKEN, accountBasicInfo);
         response.addHeader("Authorization", "Bearer " + accessToken);
         response.addHeader("refresh_token", refreshToken);
         response.addHeader("grant_type", accountBasicInfo.getRole());
@@ -91,15 +91,15 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
         String userName = accountBasicInfo.getUserName();
         String token = "";
         // 엑세스 토큰 발급 및 헤더 저장 & 리프레시 토큰 발급
-        if(JwtConst.ACCESS_TOKEN.equals(tokenType)) {
-            token = jwtUtils.generateToken(accountBasicInfo, JwtConst.ACCESS_EXPIRED);
+        if(Constant.JwtConst.ACCESS_TOKEN.equals(tokenType)) {
+            token = jwtUtils.generateToken(accountBasicInfo, Constant.RedisConst.ACCESS_EXPIRED);
 
-            String signature = token.split(JwtConst.SPLIT_TOKEN_SEPARATOR)[2];
+            String signature = token.split(Constant.JwtConst.SPLIT_TOKEN_SEPARATOR)[2];
             redisUtils.makeRefreshTokenAndExpiredAt(signature, token, accountBasicInfo);
             historyAccessTokenService.add(signature, userName, token);
 
-        } else if(JwtConst.REFRESH_TOKEN.equals(tokenType)) {
-            token = jwtUtils.generateToken(accountBasicInfo, JwtConst.REFRESH_EXPIRED);
+        } else if(Constant.JwtConst.REFRESH_TOKEN.equals(tokenType)) {
+            token = jwtUtils.generateToken(accountBasicInfo, Constant.RedisConst.REFRESH_EXPIRED);
             refreshTokenService.add(userName, token);
         }
         log.info("============ [Authentication Create Tokens] End ============");

@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.sample.component.utils.JwtConst.getDate;
+import static com.sample.component.utils.Constant.getDate;
 
 @Slf4j
 public class JwtUtils {
@@ -50,7 +50,7 @@ public class JwtUtils {
                 .setIssuer(ISSUER) // 토큰 발급
                 .setSubject(SUBJECT) // 토큰 제목
                 .setAudience(AUDIENCE) // 토큰 대상자
-                .setIssuedAt(createDate(JwtConst.DEFAULT_EXPIRED)) // 토큰 발생 시간
+                .setIssuedAt(createDate(Constant.RedisConst.DEFAULT_EXPIRED)) // 토큰 발생 시간
                 .setExpiration(createDate(plusMinutes)) // 만료시간
 
                 .compact();
@@ -61,7 +61,7 @@ public class JwtUtils {
      */
     private Date createDate(int plusTime) {
         Date date = getDate(plusTime);
-        log.info("Token 3: create {}: {}", (plusTime == JwtConst.DEFAULT_EXPIRED ? "IssueAt Time" : "ExpireAt Time"), date.getTime());
+        log.info("Token 3: create {}: {}", (plusTime == Constant.RedisConst.DEFAULT_EXPIRED ? "IssueAt Time" : "ExpireAt Time"), date.getTime());
         return date;
     }
 
