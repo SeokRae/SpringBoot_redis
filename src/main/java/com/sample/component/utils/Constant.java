@@ -7,6 +7,9 @@ import java.util.Date;
 public interface Constant {
 
     class JwtConst {
+        static final String SUBJECT = "/auth/login";
+        static final String ISSUER = "seok";
+        static final String AUDIENCE = "client";
         public static String SPLIT_TOKEN_SEPARATOR = "\\.";
         public static String AUTHORIZATION = "Authorization";
         public static String BEARER = "Bearer ";

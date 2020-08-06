@@ -93,7 +93,7 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
         String signature = newAccessToken.split(Constant.JwtConst.SPLIT_TOKEN_SEPARATOR)[2];
         historyAccessTokenService.add(signature, userName, newAccessToken); /* 엑세스 토큰 이력 임시저장 */
         /* AccessToken Redis 등록 및 유효시간 설정 */
-        redisUtils.makeRefreshTokenAndExpiredAt(userName, newAccessToken, accountBasicInfo);
+        redisUtils.makeRefreshTokenAndExpiredAt(signature, newAccessToken, accountBasicInfo);
 
         return newAccessToken;
     }

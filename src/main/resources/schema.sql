@@ -1,4 +1,4 @@
-use healtheat;
+use user_db;
 drop table if exists account;
 create table account(
   id         bigint not null auto_increment,

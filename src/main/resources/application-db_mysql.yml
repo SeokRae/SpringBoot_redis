@@ -21,14 +21,7 @@ spring:
 
   datasource:
     sql-script-encoding: UTF-8
-    # 휴대폰 테더링
-#    url: jdbc:mysql://192.168.44.64:3306/healtheat
-    # 집 와이파이
-#    url: jdbc:mysql://172.30.1.59:3306/healtheat
-    # 투썸 플레이스
-    url: jdbc:mysql://192.168.0.6:3306/healtheat
-    # 더룸
-#    url: jdbc:mysql://192.168.35.2:3306/healtheat
-    username: root
+    url: jdbc:mysql://localhost:3307/user_db
+    username: seok
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver

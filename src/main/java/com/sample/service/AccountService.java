@@ -39,7 +39,7 @@ public class AccountService {
     /* 사용자 명, 비밀번호로 정보 조회 */
     @Transactional(readOnly = true)
     public Account get(String name, String pw) {
-        return accountRepository.findByUserNameAndUserPw(name, pw).orElseGet( null);
+        return accountRepository.findByUserNameAndUserPw(name, pw).orElseThrow(RuntimeException::new);
     }
 
     /* 사용자 명으로 사용자 조회 */

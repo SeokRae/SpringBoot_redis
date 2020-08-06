@@ -76,6 +76,7 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
         /* 엑세스 토큰, 리프레시 토큰 발급 */
         String accessToken = createTokens(Constant.JwtConst.ACCESS_TOKEN, accountBasicInfo);
         String refreshToken = createTokens(Constant.JwtConst.REFRESH_TOKEN, accountBasicInfo);
+
         response.addHeader("Authorization", "Bearer " + accessToken);
         response.addHeader("refresh_token", refreshToken);
         response.addHeader("grant_type", accountBasicInfo.getRole());
