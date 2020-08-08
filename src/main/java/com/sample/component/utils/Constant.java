@@ -11,10 +11,9 @@ public interface Constant {
         static final String ISSUER = "seok";
         static final String AUDIENCE = "client";
         public static String SPLIT_TOKEN_SEPARATOR = "\\.";
-        public static String AUTHORIZATION = "Authorization";
         public static String BEARER = "Bearer ";
         public static String ACCESS_TOKEN = "accessToken";
-        public static String REFRESH_TOKEN = "refreshToken";
+        public static String REFRESH_TOKEN = "refresh_token";
 
     }
     class RedisConst {

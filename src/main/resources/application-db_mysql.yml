@@ -21,7 +21,7 @@ spring:
 
   datasource:
     sql-script-encoding: UTF-8
-    url: jdbc:mysql://localhost:3307/user_db
+    url: jdbc:mysql://localhost:3307/user_db?useSSL=false
     username: seok
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver

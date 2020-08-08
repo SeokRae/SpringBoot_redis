@@ -18,6 +18,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
+import static com.sample.component.utils.Constant.JwtConst.BEARER;
+import static com.sample.component.utils.Constant.JwtConst.REFRESH_TOKEN;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+
 @Slf4j
 public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
 
@@ -75,10 +79,10 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
 
         /* 엑세스 토큰, 리프레시 토큰 발급 */
         String accessToken = createTokens(Constant.JwtConst.ACCESS_TOKEN, accountBasicInfo);
-        String refreshToken = createTokens(Constant.JwtConst.REFRESH_TOKEN, accountBasicInfo);
+        String refreshToken = createTokens(REFRESH_TOKEN, accountBasicInfo);
 
-        response.addHeader("Authorization", "Bearer " + accessToken);
-        response.addHeader("refresh_token", refreshToken);
+        response.addHeader(AUTHORIZATION, BEARER + accessToken);
+        response.addHeader(REFRESH_TOKEN, refreshToken);
         response.addHeader("grant_type", accountBasicInfo.getRole());
     }
 
@@ -99,7 +103,7 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
             redisUtils.makeRefreshTokenAndExpiredAt(signature, token, accountBasicInfo);
             historyAccessTokenService.add(signature, userName, token);
 
-        } else if(Constant.JwtConst.REFRESH_TOKEN.equals(tokenType)) {
+        } else if(REFRESH_TOKEN.equals(tokenType)) {
             token = jwtUtils.generateToken(accountBasicInfo, Constant.RedisConst.REFRESH_EXPIRED);
             refreshTokenService.add(userName, token);
         }

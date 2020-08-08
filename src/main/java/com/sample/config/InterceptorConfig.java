@@ -34,8 +34,8 @@ public class InterceptorConfig implements WebMvcConfigurer {
                 )
                 /* 인증 처리 제외 경로 설정 */
                 .excludePathPatterns(
-                        "/account/add/**"       /* 사용자 등록 */
-                        , "/account/all"        /* 사용자 목록 조회 */
+                        "/account/add/**"       /* 사용자 등록                               */
+                        , "/account/all"        /* 사용자 목록 조회                            */
                 );
 
         /* 인가 / 권한 인터셉터 설정 */

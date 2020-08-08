@@ -17,6 +17,10 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static com.sample.component.utils.Constant.JwtConst.BEARER;
+import static com.sample.component.utils.Constant.JwtConst.REFRESH_TOKEN;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+
 @Slf4j
 public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
 
@@ -35,8 +39,8 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         log.info("[Authorization] Process -> Start");
         /* 요청 헤더에서 Authorization 값 추출 및 Bearer prefix 처리 -> accessToken 추출 */
-        String accessToken = request.getHeader("Authorization").replace("Bearer ", "");
-        String refreshToken = request.getHeader("refresh_token");
+        String accessToken = request.getHeader(AUTHORIZATION).replace(BEARER, "");
+        String refreshToken = request.getHeader(REFRESH_TOKEN);
 
         log.info("[JWT InvalidCheck] Request URL : {}", request.getRequestURL());
 
@@ -60,7 +64,7 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
                 if(jwtUtils.isValidToken(refreshToken)) {
                     /* RefreshToken이 유효함으로 써 AccessToken 재발급 프로세스 진행 */
                     String newAccessToken = reIssueAccessToken(refreshToken);
-                    response.addHeader(Constant.JwtConst.AUTHORIZATION, Constant.JwtConst.BEARER + newAccessToken);
+                    response.addHeader(AUTHORIZATION, BEARER + newAccessToken);
                     response.addHeader(Constant.JwtConst.REFRESH_TOKEN, refreshToken);
 
                     return true;

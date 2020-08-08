@@ -3,7 +3,6 @@ package com.sample.component.utils;
 import com.sample.domain.dtos.AccountBasicInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -23,9 +22,6 @@ public class RedisUtils {
     @Resource(name = "redisTemplate")
     private HashOperations<String, String, AccountBasicInfo> hashOperations;
 
-    @Resource(name = "redisTemplate")
-    private ListOperations<String, Object> listOperations;
-
     public Boolean hasKey(String key, String hashKey) {
         return hashOperations.hasKey(key, hashKey);
     }
@@ -37,9 +33,5 @@ public class RedisUtils {
     public void makeRefreshTokenAndExpiredAt(String signature, String accessToken, AccountBasicInfo accountBasicInfo) {
         hashOperations.put(Constant.RedisConst.PREFIX_KEY + signature, accessToken, accountBasicInfo);
         redisTemplate.expireAt(Constant.RedisConst.PREFIX_KEY + signature, getDate(Constant.RedisConst.REDIS_EXPIRED));
-    }
-
-    public void writeLog() {
-        listOperations.leftPush(Constant.RedisConst.WAS_LOG, "");
     }
 }

@@ -19,9 +19,6 @@
 
 - key에 expireAt 설정 가능, hashKey에 expireAt 설정 불가능
 
-- Redis에 key 
-- redis-cli
-
 ```shell script
 # 전체 키 확인
 keys *
@@ -45,20 +42,38 @@ zrange {key} 0 3
 - Redis의 로그는 AOF 로 파일로 저장해야 함
     - 일일 통계 Batch를 통해 레디스의 로그 파일을 DB로 집계 처리 해야 함
 
-- 사용자 접근 통계를 위한 시나리오
-    - Client의 AccessToken의 유효기간을 1분으로 설정
-    - Redis내에 AccessToken을 저장하는 시간을 3분으로 설정 (Redis에는 한 사용자에 대한 AccessToken이 3개까지 존재할 수 있다.)
-    - Client는 AccessToken을 가지고 Resource 접근 요청을 수행
-    - 서버는 AccessToken의 유효성을 검사하고 expired된 token임을 확인하면 Redis에 저장되어있는 hash로 저장되어 있는 accessToken을 조회
-    - 조회된 accessToken의 정보는 key(user:signature), hashKey(accessToken), 사용자정보(account)를 갖고 있어, 사용자 정보를 통해 refreshToken을 조회
-    - 조회된 refreshToken의 유효성 검사를 실시, 유효기간 아직 남아있으면 accessToken을 재발급하여 클라이언트에 전달
-    - refreshToken의 유효기간이 끝난경우, 클라이언트에게 로그인을 할 수 있도록 알림을 반환
+- Authentication / Authorization 시나리오
 
-    - 위 프로세스 동안 생성된 accessToken과 refreshToken을 통해 사용자의 활동 통계 값을 집계할 수 있다.
-        1. refreshToken의 이력을 통해 하루 로그인 통계 값 확인 가능 (사실 accessToken을 재발급 할 때, refreshToken의 유효기간이 더 길어져야 하는게 아닌지 ?)
-        2. accessToken의 이력을 통해 하나의 refreshToken당 몇개의 accessToken을 재발급 했는지 통계
-        3. accessToken의 재발급된 이력 + @ 로 접근 통계 (요청 URL에 대한 이력을 쌓는 경우, 해당 자원에 대한 접근 빈도 확인 가능)
+    1. Authentication
+        1) 클라이언트의 로그인 요청 (ID / PASSWORD)
+        2) Interceptor에서 id와 Password의 유효성 검사
+        3) 사용자가 존재하고 권한이 확인되면 JWT 발급 (AccessToken, RefreshToken)
+            (1) type, algorithm으로 header를 생성 
+            (2) DB조회 하여 사용자의 username, role으로 Claim 설정
+            (3) Registered Claim의 종류인 Issuer(발급자), Subject(토큰제목), Audience(대상자), IssueAt(발급일자), Expiration(만료시간) 설정
+            (4) 위 Claim들로 Payload 생성
+            (5) Header와 Payload를 서버에서 임의로 설정한 값으로 해싱알고리즘을 통해 Signature 생성 
+        4) 서버에서 AccessToken은 Redis에 저장, RefreshToken은 DB에 저장하도록 한다.
 
-## Reids Token
+        * Redis에 Token의 유효기간을 설정할 것인지 중요 (최소 AccessToken의 유효시간이상)
+
+    2. Authorization (인가)
+        1) Client는 AccessToken과 RefreshToken을 모두 갖고 있는 상태
+        2) Client는 Resource에 접근 시, AccessToken과 함께 요청한다.
+        3) Interceptor에서 특정 Resource 접근에 대한 요청을 캐치하여 인가 프로세스를 실시한다.
+        4) AccessToken의 유효성 검사 (Signature, Malformed, UnsupportedJwt, NullPoint, Expired)
+            (1) AccessToken에서 Expired 예외가 발생하는 경우, RefreshToken의 유효성을 검사
+                - RefreshToken이 유효하지 않은 경우 로그인 필요 에러로그 반환
+            (2) RefreshToken이 정상인 경우 RefreshToken의 Payload 값을 통해 AccessToken을 재발급
+        5) AccessToken이 정상인경우 Redis의 AccessToken을 확인, 정상인 경우 resource에 접근 할 수 있도록 허용
+
+    - 위 프로세스를 통해 사용자의 사이트 방문 통계를 확인할 수 있다.
+        1. RefreshToken의 이력을 통해 일일 특정 시간의 방문자 통계를 알 수 있다.
+        2. RefreshToken당 AccessToken 발급 횟수를 통해 사용자의 사이트 체류시간을 알 수 있다.
+        3. AccessToken의 이력을 통해 접속량 확인 가능 
+
+## JWT 사용 시 궁금한 점
 1. 클라이언트에 AccessToken, RefreshToken 을 모두 넘겨주는 경우 토큰 탈취에 대한 문제는 없는 것인가?
-2. Redis에서 AccessToken 을 보관하는 유효기간은 얼마나 ? 
+
+## Redis 사용 시 궁금한 점
+1. Redis에서 AccessToken 을 보관하는 유효기간은 얼마나 ? 

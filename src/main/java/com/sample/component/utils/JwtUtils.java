@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.sample.component.utils.Constant.getDate;
+import static com.sample.component.utils.DateUtils.DATE_FORMAT;
+import static com.sample.component.utils.DateUtils.dateToFormatChange;
 
 @Slf4j
 public class JwtUtils {
@@ -38,8 +40,6 @@ public class JwtUtils {
         return Jwts.builder()
                 // JWT -> Header 생성 부분
                 .setHeader(createHeader()) // 토큰의 타입 명시
-                // JWT -> Signature 암호화 부분
-                .signWith(key, SignatureAlgorithm.HS256) // 해싱 알고리즘으로 암호화 -> 서버에서 토큰 검증 시 signature에서 사용함
                 // JWT -> Payload 생성 부분
                 .setClaims(createClaims(account)) // private claim -> 사용자 정보
                 // JWT -> Payload -> public Claims
@@ -48,7 +48,8 @@ public class JwtUtils {
                 .setAudience(Constant.JwtConst.AUDIENCE) // 토큰 대상자
                 .setIssuedAt(createDate(Constant.RedisConst.DEFAULT_EXPIRED)) // 토큰 발생 시간
                 .setExpiration(createDate(plusMinutes)) // 만료시간
-
+                // JWT -> Signature 암호화 부분
+                .signWith(key, SignatureAlgorithm.HS256) // 해싱 알고리즘으로 암호화 -> 서버에서 토큰 검증 시 signature에서 사용함
                 .compact();
     }
 
@@ -133,10 +134,11 @@ public class JwtUtils {
             log.info("[Token] requestToken : {}", token);
             Claims claims = getClaimsFormToken(token);
             log.info("[Token Claims] {}", claims);
-            log.info("[Token Registered Claims] expireTime : {}", Date.from(claims.getExpiration().toInstant())); // time은 정해진 포맷이 있어야 할 것 같은데 ?
+
+            log.info("[Token Registered Claims] expireTime : {}", dateToFormatChange(claims.getExpiration(), DATE_FORMAT)); // time은 정해진 포맷이 있어야 할 것 같은데 ?
             log.info("[Token Registered Claims] Audience :" + claims.getAudience());
             log.info("[Token Registered Claims] Issuer :" + claims.getIssuer());
-            log.info("[Token Registered Claims] IssuedAt :" + claims.getIssuedAt().getTime());
+            log.info("[Token Registered Claims] IssuedAt :" + dateToFormatChange(claims.getIssuedAt(), DATE_FORMAT));
             log.info("[Token Registered Claims] Subject :" + claims.getSubject());
             log.info("[Token Public Claims] Id :" + claims.get("id"));
             log.info("=================== Claims ===================");
