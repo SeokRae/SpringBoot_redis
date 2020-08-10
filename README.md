@@ -33,10 +33,12 @@ smember {key}
 zrange {key} 0 3
 ```
 
-## Redis Architecture
-- [Authentication](https://docs.google.com/presentation/d/1RpUnnnr9dNuPOJTS11RpR02qErl2GBBfiUr7JeBtsLs/edit?usp=sharing)
-- [Authorization](https://docs.google.com/presentation/d/1RpUnnnr9dNuPOJTS11RpR02qErl2GBBfiUr7JeBtsLs/edit?usp=sharing)
-
+## Redis & JWT Architecture
+- docs
+    [Presentation](https://docs.google.com/presentation/d/1RpUnnnr9dNuPOJTS11RpR02qErl2GBBfiUr7JeBtsLs/edit?usp=sharing)
+    [Blog](https://seokr.tistory.com/833)
+- Authentication
+- Authorization
 
 ## Redis 활용
 - Redis의 로그는 AOF 로 파일로 저장해야 함
@@ -64,7 +66,9 @@ zrange {key} 0 3
         4) AccessToken의 유효성 검사 (Signature, Malformed, UnsupportedJwt, NullPoint, Expired)
             (1) AccessToken에서 Expired 예외가 발생하는 경우, RefreshToken의 유효성을 검사
                 - RefreshToken이 유효하지 않은 경우 로그인 필요 에러로그 반환
+
             (2) RefreshToken이 정상인 경우 RefreshToken의 Payload 값을 통해 AccessToken을 재발급
+
         5) AccessToken이 정상인경우 Redis의 AccessToken을 확인, 정상인 경우 resource에 접근 할 수 있도록 허용
 
     - 위 프로세스를 통해 사용자의 사이트 방문 통계를 확인할 수 있다.
