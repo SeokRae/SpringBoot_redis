@@ -47,29 +47,27 @@ zrange {key} 0 3
 - Authentication / Authorization 시나리오
 
     1. Authentication
-        1) 클라이언트의 로그인 요청 (ID / PASSWORD)
-        2) Interceptor에서 id와 Password의 유효성 검사
-        3) 사용자가 존재하고 권한이 확인되면 JWT 발급 (AccessToken, RefreshToken)
-            (1) type, algorithm으로 header를 생성 
-            (2) DB조회 하여 사용자의 username, role으로 Claim 설정
-            (3) Registered Claim의 종류인 Issuer(발급자), Subject(토큰제목), Audience(대상자), IssueAt(발급일자), Expiration(만료시간) 설정
-            (4) 위 Claim들로 Payload 생성
-            (5) Header와 Payload를 서버에서 임의로 설정한 값으로 해싱알고리즘을 통해 Signature 생성 
-        4) 서버에서 AccessToken은 Redis에 저장, RefreshToken은 DB에 저장하도록 한다.
+        1.1 클라이언트의 로그인 요청 (ID / PASSWORD)
+        1.2 Interceptor에서 id와 Password의 유효성 검사
+        1.3 사용자가 존재하고 권한이 확인되면 JWT 발급 (AccessToken, RefreshToken)
+            1.3.1 type, algorithm으로 header를 생성
+            1.3.2 DB조회 하여 사용자의 username, role으로 Claim 설정
+            1.3.3 Registered Claim의 종류인 Issuer(발급자), Subject(토큰제목), Audience(대상자), IssueAt(발급일자), Expiration(만료시간) 설정
+            1.3.4 위 Claim들로 Payload 생성
+            1.3.5 Header와 Payload를 서버에서 임의로 설정한 값으로 해싱알고리즘을 통해 Signature 생성 
+        1.4 서버에서 AccessToken은 Redis에 저장, RefreshToken은 DB에 저장하도록 한다.
 
         * Redis에 Token의 유효기간을 설정할 것인지 중요 (최소 AccessToken의 유효시간이상)
 
     2. Authorization (인가)
-        1) Client는 AccessToken과 RefreshToken을 모두 갖고 있는 상태
-        2) Client는 Resource에 접근 시, AccessToken과 함께 요청한다.
-        3) Interceptor에서 특정 Resource 접근에 대한 요청을 캐치하여 인가 프로세스를 실시한다.
-        4) AccessToken의 유효성 검사 (Signature, Malformed, UnsupportedJwt, NullPoint, Expired)
-            (1) AccessToken에서 Expired 예외가 발생하는 경우, RefreshToken의 유효성을 검사
+        2.1 Client는 AccessToken과 RefreshToken을 모두 갖고 있는 상태
+        2.2 Client는 Resource에 접근 시, AccessToken과 함께 요청한다.
+        2.3 Interceptor에서 특정 Resource 접근에 대한 요청을 캐치하여 인가 프로세스를 실시한다.
+        2.4 AccessToken의 유효성 검사 (Signature, Malformed, UnsupportedJwt, NullPoint, Expired)
+            2.4.1 AccessToken에서 Expired 예외가 발생하는 경우, RefreshToken의 유효성을 검사
                 - RefreshToken이 유효하지 않은 경우 로그인 필요 에러로그 반환
-
-            (2) RefreshToken이 정상인 경우 RefreshToken의 Payload 값을 통해 AccessToken을 재발급
-
-        5) AccessToken이 정상인경우 Redis의 AccessToken을 확인, 정상인 경우 resource에 접근 할 수 있도록 허용
+            2.4.2 RefreshToken이 정상인 경우 RefreshToken의 Payload 값을 통해 AccessToken을 재발급
+        2.5 AccessToken이 정상인경우 Redis의 AccessToken을 확인, 정상인 경우 resource에 접근 할 수 있도록 허용
 
     - 위 프로세스를 통해 사용자의 사이트 방문 통계를 확인할 수 있다.
         1. RefreshToken의 이력을 통해 일일 특정 시간의 방문자 통계를 알 수 있다.
